@@ -1,152 +1,224 @@
-# Calidrux — Pharmaceutical Warehouse Optimizer
+<p align="center">
+  <img src="docs/brand/banner.svg" alt="Calidrux — pharmaceutical warehouse optimizer" width="100%">
+</p>
 
-[![CI](https://github.com/JijnasuRout/calidrux/actions/workflows/ci.yml/badge.svg)](https://github.com/JijnasuRout/calidrux/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/python-3.11%2B-1d4ed8)
-![License](https://img.shields.io/badge/license-MIT-1d4ed8)
+<p align="center">
+  <a href="https://github.com/JijnasuRout/Calidrux/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/JijnasuRout/Calidrux/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-1d4ed8?style=flat-square&logo=python&logoColor=white">
+  <img alt="OR-Tools" src="https://img.shields.io/badge/optimization-OR--Tools-1d4ed8?style=flat-square">
+  <img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-1d4ed8?style=flat-square&logo=fastapi&logoColor=white">
+  <img alt="Offline" src="https://img.shields.io/badge/runs-offline-1d4ed8?style=flat-square">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1d4ed8?style=flat-square"></a>
+</p>
 
-Calidrux is an offline Windows desktop app that applies industrial engineering and
-operations research methods to pharmaceutical warehouse operations. It shows where
-every unit of medicine sits on an interactive floor map, tracks every lot by expiry,
-guides put-away into the right temperature zone, classifies SKUs with ABC analysis,
-recommends storage locations with a constraint-aware optimizer, and plans shorter
-picking routes.
+<p align="center">
+  <b>See every unit of medicine in your warehouse: where it is, how fresh it is,<br>
+  and the fastest way to put it away and pick it.</b>
+</p>
 
-![Warehouse floor map](docs/warehouse-floor.png)
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/USER_GUIDE.md">User guide</a> ·
+  <a href="docs/METHODS.md">Engineering notes</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
 
-## Warehouse Operations
+<p align="center">
+  <img src="docs/media/tour.gif" alt="Calidrux tour: overview, floor map, rack inspector, expiry board and search" width="100%">
+</p>
 
-**Floor map** — a live top-down plan of every aisle and rack. Each rack shows its shelf
-levels as bars, coloured by the earliest expiry on that shelf (or by fill level or zone).
-Search any SKU, product or lot and the matching racks light up. The 2–8 °C cold room is
-drawn as its own zone.
+## Why Calidrux
 
-**Rack inspector** — click a rack and a front-view diagram slides in: uprights, beams and
-cartons that drop onto each shelf, sized by quantity and coloured by expiry. Click a carton
-to see the lot's expiry countdown, quantity, value, location and receipt date, then move
-it, put the lot on hold, or find it everywhere.
+A pharmaceutical warehouse isn't just shelves of boxes. Every lot has an **expiry date**,
+some products must stay at **2–8 °C**, suspect lots go on **quality hold**, and every move
+has to be **traceable**. Calidrux is a desktop warehouse system built around those rules,
+with industrial engineering methods doing the planning:
 
-![Rack inspector](docs/rack-inspector.png)
+- a **live floor map** that shows what is on every shelf and how close it is to expiry,
+- **put-away suggestions** that respect temperature zones, capacity and lot rules,
+- **FEFO picking** with **routes optimized by OR-Tools**, measured against a naive baseline,
+- **ABC classification** and **slotting optimization** to keep fast movers close to the dock.
 
-**Receive & put away** — log a delivery (product, lot, expiry, quantity, PO). Calidrux ranks
-the slots that can take it — right temperature zone, enough space, no mixing of different
-products in one slot, same-lot consolidation first, fast movers near the dock — and
-animates the route from the dock door to the chosen rack.
+It runs fully offline on a Windows laptop, and one click loads a realistic sample warehouse.
 
-![Receive and put away](docs/receive.png)
+## Highlights
 
-**Expiry board** — every lot bucketed as Expired / ≤30 / 31–90 / 91–180 / >180 days with
-units and value at risk, a 12-month timeline (bubble size = units) and a board of cards.
-Click anything to jump to its shelf; put expired lots on hold in one click.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🗺️ Live floor map</h3>
+      Every aisle, rack and shelf level, coloured by the earliest expiry on it (or by fill
+      level or temperature zone). Type a SKU, product or lot and the matching racks light up.
+    </td>
+    <td width="50%" valign="top">
+      <h3>📦 Rack inspector</h3>
+      Click a rack and a front-view diagram slides in, with cartons dropping onto each shelf.
+      Click a carton to see the lot's expiry countdown, then move it, hold it, or find it
+      everywhere.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>⤓ Smart receiving</h3>
+      Calidrux ranks the slots that can take a delivery (right zone, enough space, no product
+      mixing, same-lot consolidation, fast movers near the dock) and animates the route from
+      the dock door.
+    </td>
+    <td valign="top">
+      <h3>⏱️ Expiry board</h3>
+      Every lot grouped as expired, ≤ 30, 31–90, 91–180 and 180+ days, with value at risk, a
+      12-month timeline and one-click quality holds.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🧭 Optimized picking</h3>
+      FEFO lot selection plus a travelling-salesman route from OR-Tools, drawn on the floor
+      plan next to the aisle-by-aisle route. Sample routes are typically 15–30% shorter.
+    </td>
+    <td valign="top">
+      <h3>📐 Layout designer</h3>
+      Set aisles, bays, levels and cold rooms with a live preview. Changes that would strand
+      stock are blocked, and retired slots are kept for audit history.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>📊 ABC & slotting</h3>
+      Pareto classification by usage value, and an assignment model (OR-Tools SCIP) that
+      places each product in its lowest-cost slot within cold-chain, quarantine and weight
+      limits.
+    </td>
+    <td valign="top">
+      <h3>✨ Built to feel smooth</h3>
+      Overview dashboard, <kbd>Ctrl</kbd>+<kbd>K</kbd> command palette, view transitions,
+      sliding indicators, animated charts and an append-only audit trail on every change.
+    </td>
+  </tr>
+</table>
 
-![Expiry board](docs/expiry-board.png)
+## See it in action
 
-**Layout designer** — set aisles, bays, levels, which aisles are cold rooms, slot capacity,
-weight limits and spacing. The preview updates live, showing new racks and racks that would
-be removed. Slots that still hold stock can't be removed or switched between cold and
-ambient; retired slots are kept for history, never deleted.
+**Receiving:** pick the product and quantity, get ranked slots with reasons, and watch the
+delivery travel from the dock to its shelf.
 
-![Layout designer](docs/layout-designer.png)
+<p align="center"><img src="docs/media/receive.gif" alt="Receiving and put-away" width="88%"></p>
 
-## All modules
+**Pick routing:** FEFO chooses the lots, OR-Tools orders the stops, and the dashed orange
+line is the naive aisle-by-aisle route it beats.
 
-| Module | What it does | Method |
+<p align="center"><img src="docs/media/pick-route.gif" alt="Optimized pick route" width="88%"></p>
+
+<details>
+<summary><b>More screenshots</b></summary>
+<br>
+<table>
+  <tr>
+    <td><img src="docs/screenshots/overview.png" alt="Overview"><p align="center">Overview</p></td>
+    <td><img src="docs/screenshots/floor-map.png" alt="Floor map"><p align="center">Floor map</p></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/rack-inspector.png" alt="Rack inspector"><p align="center">Rack inspector</p></td>
+    <td><img src="docs/screenshots/expiry-board.png" alt="Expiry board"><p align="center">Expiry board</p></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/layout-designer.png" alt="Layout designer"><p align="center">Layout designer</p></td>
+    <td><img src="docs/screenshots/command-palette.png" alt="Command palette"><p align="center">Command palette (Ctrl+K)</p></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/pick-route.png" alt="Pick route"><p align="center">Pick route</p></td>
+    <td><img src="docs/screenshots/abc-analysis.png" alt="ABC analysis"><p align="center">ABC analysis</p></td>
+  </tr>
+</table>
+</details>
+
+## How it works
+
+| Problem | Method | Details |
 |---|---|---|
-| **Warehouse Ops** | Floor map, rack inspector, receiving & put-away, expiry board, layout designer | Rule-based put-away scoring (zone, capacity, no-mixing, consolidation, velocity × distance); FEFO expiry buckets |
-| **Inventory** | Products, batches/lots, locations; receive, transfer, adjust; CSV import; expiry alerts at 30/60/90 days | FEFO (first-expired, first-out), cold-chain zone checks |
-| **ABC Analysis** | Classifies SKUs by annual usage value, Pareto chart, saved snapshots | Pareto / ABC classification (pandas) |
-| **Slotting** | Recommends which location each SKU should occupy, with accept/reject workflow | Assignment model in Google OR-Tools with pharma hard constraints (cold-chain, quarantine, weight limits) |
-| **Picking** | Builds pick lists and orders the stops | FEFO batch allocation + travelling-salesman routing (OR-Tools), compared against an aisle-by-aisle baseline |
-| **Audit Log** | Append-only record of every change | Supports GDP-style traceability |
+| Which SKUs matter most? | ABC / Pareto on usage value $f_i \cdot c_i$ | [Notes §2](docs/METHODS.md#2-abc-classification) |
+| Which lot ships first? | FEFO; expired and held lots are never picked | [Notes §3](docs/METHODS.md#3-expiry-control-fefo-and-shelf-life-buckets) |
+| Where should a delivery go? | Hard rules + weighted score (velocity × distance, height, consolidation) | [Notes §4](docs/METHODS.md#4-put-away-choosing-a-slot-for-incoming-stock) |
+| Where should each product live? | Linear assignment model, solved exactly with OR-Tools (SCIP) | [Notes §5](docs/METHODS.md#5-slotting-optimization-assignment-model) |
+| In what order to pick? | Travelling-salesman problem, OR-Tools routing with Guided Local Search | [Notes §6](docs/METHODS.md#6-pick-routing-travelling-salesman-problem) |
+| Can the layout change safely? | Grid reconciliation that blocks any change stranding stock | [Notes §7](docs/METHODS.md#7-layout-changes-that-never-strand-stock) |
 
-Everything runs locally: data lives in a SQLite database on the user's machine, and
-no internet connection is needed.
+The full write-up, with formulas, assumptions and limitations, is in
+**[docs/METHODS.md](docs/METHODS.md)**.
 
-## Architecture
+## Quick start
 
-```
-pywebview window (Edge WebView2)
-        │
-        ▼
-FastAPI + uvicorn  ── /api/...  ──►  warehouse/  (layout, floor map, put-away, expiry)
-                                     services/  (inventory, audit)
-  serves static SPA                  optimization/  (abc, slotting, picking)
-  (HTML/CSS/JS + Chart.js)           db/  (SQLAlchemy models → SQLite)
-```
-
-| Layer | Tech |
-|---|---|
-| UI | HTML/CSS/JavaScript single-page app, Chart.js |
-| Desktop shell | pywebview (uses the OS's built-in WebView2) |
-| API | FastAPI, uvicorn |
-| Optimization | Google OR-Tools, pandas |
-| Data | SQLAlchemy 2, SQLite, Alembic |
-| Packaging | PyInstaller, Inno Setup |
-
-## Quick start (from source)
-
-Requires Python 3.11+.
+Requires **Windows 10/11** and **Python 3.11+**.
 
 ```powershell
-git clone https://github.com/JijnasuRout/calidrux.git
-cd calidrux
+git clone https://github.com/JijnasuRout/Calidrux.git
+cd Calidrux
 python -m venv .venv
-.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+.venv\Scripts\python -m pip install -e .
+.venv\Scripts\calidrux
+```
+
+The app opens in its own window and loads a sample warehouse on first launch: 20 SKUs,
+about 60 lots, and 6 aisles × 8 bays × 4 levels (192 slots) including a cold room. If the
+window can't open, Calidrux falls back to `http://127.0.0.1:8765` in your browser.
+
+<details>
+<summary><b>macOS / Linux, tests, and building a Windows installer</b></summary>
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-calidrux
+calidrux          # run the app
+pytest            # 33 tests, about 3 seconds
 ```
 
-The app opens in its own window and loads sample data on first launch: 20 SKUs, about 60 lots,
-and a 6-aisle × 8-bay × 4-level warehouse (192 slots) with a cold room.
-To re-seed manually: `python -m calidrux.seed`.
-
-If pywebview isn't available, Calidrux falls back to opening `http://127.0.0.1:8765` in your browser.
-
-## Tests
-
-```powershell
-pytest
-```
-
-Tests cover ABC classification, slotting constraints, picking routes, the warehouse rules
-(temperature zones, capacity, no product mixing, lot/expiry checks, holds, moves, layout
-changes that would strand stock) and upgrading a database from an earlier version.
-
-## Build a Windows installer
+Build a Windows app and installer:
 
 ```powershell
 pip install -e ".[build]"
 python installer\generate_icon.py
-.\scripts\build_installer.ps1              # setup wizard (needs Inno Setup)
-.\scripts\build_installer.ps1 -PortableOnly  # portable zip only
+.\scripts\build_installer.ps1               # setup wizard (needs Inno Setup)
+.\scripts\build_installer.ps1 -PortableOnly # portable zip only
 ```
 
 | Output | Path |
 |---|---|
 | Standalone app | `dist\Calidrux\Calidrux.exe` |
-| Setup wizard | `dist\installer\Calidrux-Setup-0.1.0.exe` |
-| Portable zip | `dist\installer\Calidrux-Portable-0.1.0.zip` |
+| Setup wizard | `dist\installer\Calidrux-Setup-0.3.0.exe` |
+| Portable zip | `dist\installer\Calidrux-Portable-0.3.0.zip` |
 
-## Data location
+Data is stored in `%APPDATA%\Calidrux\` (or `~/.calidrux/Calidrux/`, or `CALIDRUX_DATA_DIR`
+if set). Databases from earlier versions are upgraded automatically.
+</details>
 
-SQLite database and settings are stored in `%APPDATA%\Calidrux\` on Windows
-(`~/.calidrux/Calidrux/` elsewhere), or in `CALIDRUX_DATA_DIR` if that is set.
-Back up from **Settings → Backup Database**. Databases from earlier versions are
-upgraded automatically on launch.
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Optimization | Google OR-Tools (SCIP MIP for slotting, RoutingModel for TSP), pandas |
+| Backend | Python 3.11+, FastAPI, uvicorn, SQLAlchemy 2, SQLite |
+| Interface | HTML, CSS, JavaScript (no framework, no build step), Chart.js |
+| Desktop | pywebview with Edge WebView2, PyInstaller, Inno Setup |
+| Quality | pytest (33 tests), GitHub Actions on Windows and Linux |
+
+More detail, including diagrams of the components, data model and request flow, is in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Roadmap
 
-Calidrux is the warehouse layer of a larger end-to-end pharmaceutical supply chain
-optimization project, which will also cover manufacturing scheduling and hospital
-delivery routing. Next steps for the warehouse module:
+- [ ] GS1 barcode scanning at receiving and picking
+- [ ] User accounts with roles and electronic sign-off for holds and releases
+- [ ] Serial-number (unit-level) tracking for DSCSA / EU FMD
+- [ ] Order batching and correlated (affinity) slotting
+- [ ] Aisle-aware travel distances instead of straight lines
 
-- Order batching for multi-order picking
-- Correlated (affinity-based) slotting from co-pick history
-- Multi-criteria ABC (criticality, expiry risk, lead time)
-- ABC-driven cycle-count scheduling
+Calidrux is the warehouse layer of a larger end-to-end pharmaceutical supply chain project,
+which will also cover manufacturing scheduling and hospital delivery routing.
 
 ## Author
 
-**Jijnasu Prakash Rout** — Industrial Engineering, Purdue University
+**Jijnasu Prakash Rout** — Industrial Engineering, Purdue University ·
 [LinkedIn](https://www.linkedin.com/in/jijnasu-rout-30b6b7358)
 
 ## License

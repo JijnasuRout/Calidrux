@@ -73,7 +73,7 @@ def compute_abc(
     return [
         AbcResult(
             sku=row.sku,
-            name=row.name,
+            name=row["name"],  # row.name would be the index label
             pick_frequency=int(row.pick_frequency),
             unit_cost=float(row.unit_cost),
             auv=float(row.auv),

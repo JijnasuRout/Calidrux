@@ -238,10 +238,10 @@ def complete_pick_list(session: Session, pick_list_id: int, duration_seconds: in
     for line in pl.lines:
         if not line.picked:
             complete_pick_line(session, line.id)
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     pl.status = PickListStatus.COMPLETED
-    pl.completed_at = datetime.utcnow()
+    pl.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
     pl.pick_duration_seconds = duration_seconds
     log_action(session, entity_type="pick_list", action="complete", entity_id=pl.id)
 

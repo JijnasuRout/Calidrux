@@ -76,6 +76,30 @@ def _seed_data(session) -> None:
     apply_layout(session, LayoutSpec(aisles=6, bays_per_aisle=8, levels=4, cold_aisles=[6]))
     session.flush()
     populate_demo_stock(session)
+    session.flush()
+    _seed_pick_history(session)
+
+
+def _seed_pick_history(session) -> None:
+    """A few routed pick lists so the picking metrics have something to show."""
+    import random
+    from datetime import date
+
+    from calidrux.db.models.batch import Batch, BatchStatus
+    from calidrux.db.models.inventory import Inventory
+    from calidrux.optimization.picking import complete_pick_list, create_pick_list
+
+    rng = random.Random(11)
+    pickable = sorted({
+        pid for (pid,) in session.query(Inventory.product_id).join(Batch)
+        .filter(Inventory.quantity > 20, Batch.status == BatchStatus.ACTIVE, Batch.expiry_date > date.today())
+    })
+    for n in range(5):
+        lines = [{"product_id": pid, "quantity": rng.randint(2, 15)} for pid in rng.sample(pickable, min(len(pickable), rng.randint(4, 7)))]
+        pl = create_pick_list(session, f"PL-DEMO-{n + 1:03d}", lines)
+        session.flush()
+        if n < 4:
+            complete_pick_list(session, pl.id, duration_seconds=len(lines) * rng.randint(40, 75))
 
 
 if __name__ == "__main__":

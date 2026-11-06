@@ -168,6 +168,10 @@ def optimize_slotting(session: Session) -> tuple[str, list[SlottingResult]]:
         from_id = current.get(product.id)
         if from_id == to_loc.id:
             continue
+        if cost_matrix[i][assigned_j] >= BIG_M:
+            # Only "assigned" through the infeasibility penalty (e.g. a lot on
+            # quality hold, or no compatible slot) — never recommend that move.
+            continue
         from_code = None
         if from_id:
             from_loc = session.get(Location, from_id)

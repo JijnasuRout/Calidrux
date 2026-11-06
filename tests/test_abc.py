@@ -41,3 +41,18 @@ def test_abc_classification(tmp_path, monkeypatch):
     assert len(results) == 2
     assert results[0].abc_class == "A"
     assert results[0].sku == "A-SKU"
+
+
+def test_abc_keeps_product_names(tmp_path, monkeypatch):
+    from decimal import Decimal
+
+    from calidrux import config as cfg_mod
+    from calidrux.db.models.product import Product
+    from calidrux.optimization.abc import compute_abc
+    from tests.conftest import setup_test_db
+
+    monkeypatch.setattr(cfg_mod.config, "db_path", tmp_path / "n.db")
+    s = setup_test_db(tmp_path / "n.db")
+    s.add(Product(sku="X-1", name="Named Product", unit_cost=Decimal("2"), pick_frequency_30d=5))
+    s.commit()
+    assert compute_abc(s)[0].name == "Named Product"

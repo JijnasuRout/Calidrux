@@ -37,7 +37,7 @@ def log_action(
 def list_audit_logs(session: Session, limit: int = 500) -> list[AuditLog]:
     return (
         session.query(AuditLog)
-        .order_by(AuditLog.created_at.desc())
+        .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
         .limit(limit)
         .all()
     )

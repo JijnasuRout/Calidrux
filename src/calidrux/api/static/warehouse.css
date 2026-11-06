@@ -9,7 +9,7 @@
 .page-sub { color: var(--muted); font-size: 13px; margin-top: 2px; max-width: 720px; }
 .wh-muted { color: var(--muted); font-size: 12px; font-weight: 500; }
 .wh-pad { padding: 18px 4px; }
-.wh-view { animation: whFade .35s ease both; }
+.wh-view { }
 @keyframes whFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ── KPIs ──────────────────────────────────────────────────────────────── */

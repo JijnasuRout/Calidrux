@@ -184,7 +184,7 @@ def receive_stock(
         entity_id=inv.id,
         before=before,
         after=inv.to_dict(),
-        notes=f"Received {quantity} units",
+        notes=f"Received {float(quantity):,.10g} units",
     )
     return movement
 
@@ -243,7 +243,7 @@ def transfer_stock(
         entity_id=src.id,
         before=src_before,
         after=src.to_dict(),
-        notes=f"Transferred {quantity} to {to_loc.code}",
+        notes=f"Transferred {float(quantity):,.10g} to {to_loc.code}",
     )
     log_action(
         session,
@@ -334,8 +334,10 @@ def allocate_fefo(
             Inventory.product_id == product_id,
             Inventory.quantity > 0,
             Batch.status == BatchStatus.ACTIVE,
+            Batch.expiry_date >= date.today(),  # never pick an already-expired lot
+            Location.active.is_(True),
         )
-        .order_by(Batch.expiry_date.asc())
+        .order_by(Batch.expiry_date.asc(), Inventory.quantity.asc())
         .all()
     )
     remaining = quantity

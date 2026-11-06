@@ -60,3 +60,20 @@ def test_pick_lifecycle(client: TestClient) -> None:
     r = client.post(f"/api/picks/{pick_id}/complete", json={"duration_seconds": 60})
     assert r.status_code == 200
     assert client.get("/api/picking/metrics").status_code == 200
+
+
+def test_fefo_never_picks_expired_lots(client):
+    items = client.get("/api/warehouse/expiry").json()["items"]
+    expired = next((i for i in items if i["days_left"] < 0 and i["status"] == "active"), None)
+    if expired is None:
+        pytest.skip("no expired active lot in sample data")
+    r = client.post("/api/picks", json={"reference": "FEFO-T", "lines": [{"product_id": expired["product_id"], "quantity": 1}]})
+    if r.status_code == 201:
+        lines = client.get(f"/api/picks/{r.json()['id']}").json()["lines"]
+        assert all(l["lot_number"] != expired["lot_number"] for l in lines)
+
+
+def test_seed_has_pick_history(client):
+    m = client.get("/api/picking/metrics").json()
+    assert m["completed_picks"] >= 1
+    assert m["avg_optimized_distance_m"] <= m["avg_baseline_distance_m"]

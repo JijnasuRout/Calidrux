@@ -199,3 +199,11 @@ def test_migration_adds_new_location_columns(tmp_path):
         row = c.exec_driver_sql("SELECT active, capacity_units FROM locations").one()
     assert {"active", "capacity_units"} <= cols
     assert tuple(row) == (1, 1000)
+
+
+def test_slotting_never_recommends_infeasible_moves(client):
+    r = client.post("/api/slotting/run")
+    assert r.status_code == 200
+    assert all(x["cost_delta"] < 1_000_000 for x in r.json()["results"])
+    held = {i["sku"] for i in client.get("/api/warehouse/expiry").json()["items"] if i["status"] == "quarantine"}
+    assert not held & {x["sku"] for x in r.json()["results"]}
