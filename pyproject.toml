@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calidrux"
+version = "0.1.0"
+description = "Pharmaceutical warehouse optimization desktop tool"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Jijnasu Prakash Rout" }]
+requires-python = ">=3.11"
+dependencies = [
+    "ortools>=9.10",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pywebview>=4.4",
+    "python-multipart>=0.0.9",
+    "SQLAlchemy>=2.0",
+    "alembic>=1.13",
+    "pandas>=2.2",
+    "pydantic>=2.0",
+    "python-dateutil>=2.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
+build = [
+    "pyinstaller>=6.0",
+]
+
+[project.scripts]
+calidrux = "calidrux.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

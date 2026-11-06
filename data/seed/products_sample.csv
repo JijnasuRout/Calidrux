@@ -1,0 +1,3 @@
+sku,name,storage_class,unit_cost,weight_kg,pick_frequency_30d
+PH-001,Amoxicillin 500mg,ambient,12.50,0.2,450
+PH-002,Paracetamol 500mg,ambient,3.20,0.15,820
