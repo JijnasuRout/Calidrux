@@ -59,6 +59,7 @@ async function viewOverview() {
         <button class="btn solid" onclick="showView('receive')">＋ Receive stock</button>
         <button class="btn" onclick="showView('floor')">Open floor map</button>
         <button class="btn" onclick="showView('expiry')">Expiry board</button>
+        <button class="btn" onclick="showView('lab')">⚗ Optimization Lab</button>
         <button class="btn" onclick="openPalette()">Search <kbd>Ctrl K</kbd></button>
       </div>
     </div>

@@ -10,6 +10,7 @@ const PAL_VIEWS = [
   ['receive', 'Receive Stock', 'Log a delivery and put it away', '⤓', 'inbound goods receipt putaway'],
   ['expiry', 'Expiry Board', 'Lots by how soon they expire', '◷', 'fefo shelf life expiring expired'],
   ['layout', 'Layout Designer', 'Aisles, bays, levels and cold rooms', '▤', 'size configure warehouse'],
+  ['lab', 'Optimization Lab', 'What-if sliders: expiry risk, route ROI, slotting trade-offs', '⚗', 'simulation sliders what if roi savings forecast monte carlo'],
   ['abc', 'ABC Analysis', 'Pareto classification by usage value', '◔', 'pareto classify'],
   ['slotting', 'Slotting', 'OR-Tools slot assignment', '⇄', 'optimize optimise solver'],
   ['picking', 'Picking', 'FEFO pick lists and TSP routes', '↯', 'pick route tsp travel'],

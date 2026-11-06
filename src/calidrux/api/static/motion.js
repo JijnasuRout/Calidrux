@@ -8,7 +8,7 @@
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.4.0';
 
 // ── Entrances ────────────────────────────────────────────────────────────────
 const ENTER_SEL = [

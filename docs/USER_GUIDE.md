@@ -74,6 +74,23 @@ blocked and the panel lists the slots to clear first.
 
 ![Layout designer](screenshots/layout-designer.png)
 
+## Optimization Lab
+
+Sliders drive four live what-if analyses. The four cards at the top summarise the impact
+in dollars and percentages. Nothing in the warehouse changes.
+
+- **Expiry write-off forecast:** set demand, units per pick and horizon to see the
+  projected write-off, a cumulative curve, the biggest products at risk, and lots to act
+  on. Click a lot to open its shelf.
+- **Route savings simulator:** simulate up to 400 orders, then enter your orders per day,
+  walking speed, labor cost and operating days to get labor saved per year.
+- **Slotting trade-offs:** adjust the four cost weights and the solver re-runs live.
+  **Map the trade-off curve** shows moves vs savings. **Use these weights** saves them for
+  the Slotting screen.
+- **ABC sensitivity:** move the A and B cut-offs and watch the Pareto chart re-classify.
+
+![Optimization Lab](screenshots/optimization-lab.png)
+
 ## ABC Analysis
 
 Classifies every SKU by usage value (picks × unit cost) into A, B and C, with a Pareto

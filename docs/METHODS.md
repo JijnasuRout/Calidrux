@@ -17,6 +17,9 @@ below matches the code in `src/calidrux/`.
 8. [Compliance-minded design](#8-compliance-minded-design)
 9. [KPIs](#9-kpis)
 10. [Limitations and next steps](#10-limitations-and-next-steps)
+11. [Expiry write-off forecast](#11-expiry-write-off-forecast)
+12. [Route savings simulation (Monte Carlo)](#12-route-savings-simulation-monte-carlo)
+13. [Slotting trade-off sweep](#13-slotting-trade-off-sweep)
 
 ---
 
@@ -276,3 +279,109 @@ system needs:
 - There's no serial-number (unit-level) tracking yet; DSCSA and EU FMD require it.
 - Single user, no electronic signatures. A validated system would add roles and
   21 CFR Part 11-style sign-offs.
+
+---
+
+# Optimization Lab
+
+The Lab runs what-if analyses on the live data without changing it. Each panel is driven
+by sliders and recomputes immediately.
+
+## 11. Expiry write-off forecast
+
+**Question:** at a given demand, how much stock will expire before it can be sold?
+
+Each product sells at a constant daily rate
+
+$$
+r_p = \frac{f_p}{30} \cdot u \cdot m
+$$
+
+where $f_p$ is picks in the last 30 days, $u$ is units per pick and $m$ is a demand
+multiplier for seasonality or promotions. $u$ and $m$ are both sliders.
+
+The product's lots are consumed in **FEFO order**. Let $t$ be the day the previous lot ran
+out (starting at 0), and let lot $k$ have quantity $q_k$ and $d_k$ days left:
+
+$$
+\text{sold}_k = \min\big(q_k,\; r_p \cdot \max(0, d_k - t)\big), \qquad
+\text{write-off}_k = q_k - \text{sold}_k
+$$
+
+$$
+t \leftarrow
+\begin{cases}
+t + q_k / r_p & \text{if the lot sells out} \\
+\max(t, d_k) & \text{if it expires first}
+\end{cases}
+$$
+
+Lots already past expiry are written off in full. Lots on quality hold are excluded and
+reported separately. The forecast counts lots expiring within the horizon $H$ (a slider)
+and reports units, value ($q \times$ unit cost), share of stock value, and a cumulative
+write-off curve. Each at-risk lot gets a rule-based suggested action:
+
+- expired → quarantine and destroy,
+- ≤ 30 days → discount or redistribute,
+- ≤ 90 days → move to the golden zone and promote,
+- otherwise → cut the next order.
+
+**Assumptions:** constant demand, no new receipts of the same product, strict FEFO.
+Real demand is lumpy, so treat the result as a ranking of risk rather than an exact
+forecast.
+
+*Source: `api/static/lab.js` (`forecastWriteOff`).*
+
+## 12. Route savings simulation (Monte Carlo)
+
+**Question:** how much is route optimization worth for *this* warehouse?
+
+1. Build the set of pickable slots: slots holding active, unexpired stock. Each slot is
+   weighted by its product's pick frequency, so popular slots appear in more orders, as
+   they would in reality.
+2. For each of $N$ simulated orders, sample $n$ distinct slots by weighted sampling without
+   replacement.
+3. Route each order twice: OR-Tools TSP (cheapest-arc start plus local search) and the
+   aisle → bay → level baseline. Record both distances.
+4. Report the savings distribution (mean, median, p10, p90), a histogram, and a scatter of
+   baseline vs optimized distance (points below $y = x$ are savings).
+
+**Converting to money:**
+
+$$
+\text{hours/yr} = \frac{\bar{s} \cdot O \cdot D}{v \cdot 3600}, \qquad
+\text{\$/yr} = \text{hours/yr} \times w, \qquad
+\text{FTE} = \frac{\text{hours/yr}}{1800}
+$$
+
+where $\bar{s}$ is the mean metres saved per order, $O$ is orders per day, $D$ is
+operating days per year, $v$ is walking speed and $w$ is the loaded labor rate. All four
+are sliders.
+
+The same seed always gives the same orders, so results are reproducible; **Re-roll** draws
+a new sample.
+
+*Source: `analytics/lab.py` (`simulate_routes`).*
+
+## 13. Slotting trade-off sweep
+
+**Question:** how many relocations are worth making?
+
+The slotting model from §5 is re-solved with the slider weights inside a database
+**savepoint that is always rolled back**, so no recommendations are saved and the settings
+are restored. The result is evaluated with expected picker travel per 30 days:
+
+$$
+T = \sum_p f_p \cdot 2 \cdot d\big(\text{slot}(p),\, \text{dock}\big)
+$$
+
+for today's slotting and for the proposed one, plus the average distance to the dock by
+ABC class.
+
+**Map the trade-off curve** re-solves the model for a range of relocation weights (0 to 6)
+and plots *moves needed* against *travel reduction*. A low relocation cost buys the most
+savings with many moves. Raising it cuts the moves sharply but loses only a little saving
+at first, which reveals the point of diminishing returns. That curve is what a manager
+needs to decide how much re-slotting labor to spend.
+
+*Source: `analytics/lab.py` (`slotting_what_if`, `slotting_sweep`).*

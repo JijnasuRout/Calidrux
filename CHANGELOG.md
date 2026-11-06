@@ -2,6 +2,30 @@
 
 All notable changes to Calidrux. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-11-06 · Optimization Lab
+
+### Added
+- **Optimization Lab:** a new screen of slider-driven what-if analyses, with an impact
+  strip summarising the results in dollars and percentages.
+  - **Expiry write-off forecast:** FEFO depletion simulation per lot at an adjustable
+    demand, units per pick and horizon. Shows projected write-off ($, units, % of stock),
+    a cumulative curve, the top products at risk, and lots to act on with suggested
+    actions.
+  - **Route savings simulator:** Monte Carlo of up to 400 frequency-weighted orders, each
+    routed by OR-Tools vs aisle-by-aisle. Shows the savings histogram, a scatter, p10,
+    median and p90, and an ROI calculator (orders/day, walking speed, labor rate,
+    operating days → $, hours, km and FTEs per year).
+  - **Slotting trade-offs:** live re-solve of the assignment model with four weight
+    sliders. Shows travel before vs after, distance by ABC class, a proposed move list, a
+    relocation-cost sweep plotting the moves vs savings curve, and "Use these weights".
+  - **ABC sensitivity:** live Pareto re-classification and the SKUs that change class.
+- Custom animated sliders: filled track, spring thumb, value badge.
+- New API: `POST /api/lab/routes`, `/api/lab/slotting`, `/api/lab/slotting/sweep`.
+  What-ifs run in rolled-back savepoints and restore settings.
+- `solve_tsp(..., improve=False)` for fast bulk simulation.
+- 4 new tests (37 in total). Documentation: Engineering notes §11–13, Lab GIF and
+  screenshots.
+
 ## [0.3.0] — 2026-11-06 · Motion & polish
 
 ### Added

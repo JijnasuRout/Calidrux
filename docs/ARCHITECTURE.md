@@ -13,12 +13,14 @@ flowchart LR
         API["REST API<br/>api/app.py · warehouse/routes.py"]
         WH["Warehouse ops<br/>layout · floor map · put-away · expiry"]
         OPT["Optimization<br/>ABC · slotting (MIP) · pick routing (TSP)"]
+        LAB["Optimization Lab<br/>Monte Carlo · what-if · sweeps"]
         SVC["Services<br/>inventory · FEFO · audit"]
     end
     DB[("SQLite<br/>%APPDATA%/Calidrux/calidrux.db")]
     ORT["Google OR-Tools"]
     UI <-->|JSON over HTTP| API
-    API --> WH & OPT & SVC
+    API --> WH & OPT & SVC & LAB
+    LAB --> OPT
     WH --> SVC
     OPT --> ORT
     WH & OPT & SVC --> DB
@@ -42,8 +44,11 @@ src/calidrux/
 │       ├── overview.js     # Overview dashboard
 │       ├── palette.js      # Ctrl+K command palette
 │       ├── enhance.js      # picking route map, dropdown pickers, slotting/audit upgrades
+│       ├── lab.js/.css     # Optimization Lab: sliders, live what-if charts
 │       ├── motion.js/.css  # transitions, sliding indicators, toasts, chart defaults
 │       └── warehouse.css
+├── analytics/
+│   └── lab.py              # Optimization Lab: route Monte Carlo, slotting what-if & sweep (/api/lab/*)
 ├── warehouse/
 │   ├── layout.py           # layout spec, preview, apply (never strands stock)
 │   ├── service.py          # floor snapshot, rack detail, expiry board, put-away, moves
@@ -151,7 +156,7 @@ sequenceDiagram
 
 ## Testing
 
-`pytest` runs 33 tests in about 3 seconds:
+`pytest` runs 37 tests in about 3 seconds:
 
 - **Unit:** ABC classification, slotting constraints, the TSP solver.
 - **End to end through HTTP:** every read endpoint, ABC, slotting, the pick lifecycle,
@@ -159,5 +164,7 @@ sequenceDiagram
 - **Warehouse rules:** temperature zones, capacity, no product mixing, lot/expiry checks,
   holds, moves, layout changes blocked by stock, and database upgrades from earlier
   versions.
+- **Lab:** reproducible simulations, optimized routes never longer than the baseline, and
+  what-if runs that leave data and settings untouched.
 
 GitHub Actions runs the suite on Windows and Linux with Python 3.11 and 3.12.

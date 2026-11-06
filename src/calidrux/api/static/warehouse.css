@@ -211,7 +211,7 @@
 .wh-chip.ambient { background: var(--blue-50); color: var(--blue-700); }
 .wh-chip.hold { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
 .wh-loc {
-  display: inline-block; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 11px;
+  display: inline-block; white-space: nowrap; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 11px;
   background: var(--blue-50); color: var(--blue-800); padding: 1px 7px; border-radius: 5px; border: 1px solid var(--blue-100);
 }
 

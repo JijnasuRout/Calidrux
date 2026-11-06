@@ -44,7 +44,8 @@ GLS_MIN_STOPS = 8
 GLS_TIME_LIMIT_S = 2
 
 
-def solve_tsp(locations: list[Location]) -> RouteResult:
+def solve_tsp(locations: list[Location], improve: bool = True) -> RouteResult:
+    """Order the stops; ``improve=False`` skips Guided Local Search (used for bulk simulation)."""
     if not locations:
         return RouteResult([], 0.0, 0.0)
 
@@ -71,7 +72,7 @@ def solve_tsp(locations: list[Location]) -> RouteResult:
     # time limit, even for a 3-stop route. Small tours are solved well by
     # PATH_CHEAPEST_ARC + default local search, so only use GLS (with a short
     # budget) when the tour is big enough to benefit.
-    if len(locations) > GLS_MIN_STOPS:
+    if improve and len(locations) > GLS_MIN_STOPS:
         search_params.local_search_metaheuristic = (
             routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
         )

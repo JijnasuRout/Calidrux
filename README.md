@@ -28,6 +28,26 @@
   <img src="docs/media/tour.gif" alt="Calidrux tour: overview, floor map, rack inspector, expiry board and search" width="100%">
 </p>
 
+## Optimization Lab — move a slider, see the impact
+
+Every number recomputes from the live warehouse as you drag. It's what-if only, so nothing
+in the warehouse changes.
+
+<p align="center"><img src="docs/media/optimization-lab.gif" alt="Optimization Lab: sliders driving live expiry, route, slotting and ABC analyses" width="100%"></p>
+
+| Panel | Sliders | What you get |
+|---|---|---|
+| **Expiry write-off forecast** | demand ×, units per pick, horizon | FEFO depletion simulation per lot, projected write-off in $ and units, lots to act on with a suggested action |
+| **Route savings simulator** | orders, lines per order · orders/day, walking speed, labor $/h, days/year | Monte Carlo of up to 400 orders, each routed by OR-Tools vs aisle-by-aisle: savings distribution, scatter, and **annual labor $, hours, km and FTEs saved** |
+| **Slotting trade-offs** | four cost weights | Re-solves the assignment model live and measures picker travel before vs after; sweeps relocation cost to map the **moves vs savings trade-off curve** |
+| **ABC sensitivity** | A and B cut-offs | Live Pareto chart and class counts, and which SKUs change class |
+
+With the sample warehouse, optimized routes are about **20% shorter** for 8-stop orders and
+about **29% shorter** for 16-stop orders. At 1,500 orders a day that is roughly **$72k a year**
+of picker time. Re-slotting cuts expected picker travel by about **46–48%**, needing 10–16
+relocations depending on the relocation cost. The models are explained in
+[Engineering notes §11–13](docs/METHODS.md#11-expiry-write-off-forecast).
+
 ## Why Calidrux
 
 A pharmaceutical warehouse isn't just shelves of boxes. Every lot has an **expiry date**,
@@ -91,6 +111,13 @@ It runs fully offline on a Windows laptop, and one click loads a realistic sampl
       limits.
     </td>
     <td valign="top">
+      <h3>⚗️ Optimization Lab</h3>
+      Sliders drive live what-if analyses: expiry write-off forecast, Monte Carlo route
+      ROI in $/year, a slotting trade-off curve and ABC sensitivity.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" colspan="2">
       <h3>✨ Built to feel smooth</h3>
       Overview dashboard, <kbd>Ctrl</kbd>+<kbd>K</kbd> command palette, view transitions,
       sliding indicators, animated charts and an append-only audit trail on every change.
@@ -130,6 +157,10 @@ line is the naive aisle-by-aisle route it beats.
     <td><img src="docs/screenshots/pick-route.png" alt="Pick route"><p align="center">Pick route</p></td>
     <td><img src="docs/screenshots/abc-analysis.png" alt="ABC analysis"><p align="center">ABC analysis</p></td>
   </tr>
+  <tr>
+    <td><img src="docs/screenshots/lab-expiry.png" alt="Lab: expiry forecast"><p align="center">Lab · expiry write-off forecast</p></td>
+    <td><img src="docs/screenshots/lab-slotting.png" alt="Lab: slotting trade-offs"><p align="center">Lab · slotting trade-off curve</p></td>
+  </tr>
 </table>
 </details>
 
@@ -143,6 +174,9 @@ line is the naive aisle-by-aisle route it beats.
 | Where should each product live? | Linear assignment model, solved exactly with OR-Tools (SCIP) | [Notes §5](docs/METHODS.md#5-slotting-optimization-assignment-model) |
 | In what order to pick? | Travelling-salesman problem, OR-Tools routing with Guided Local Search | [Notes §6](docs/METHODS.md#6-pick-routing-travelling-salesman-problem) |
 | Can the layout change safely? | Grid reconciliation that blocks any change stranding stock | [Notes §7](docs/METHODS.md#7-layout-changes-that-never-strand-stock) |
+| How much will expire unsold? | FEFO depletion simulation at a forecast demand rate | [Notes §11](docs/METHODS.md#11-expiry-write-off-forecast) |
+| What is route optimization worth? | Monte Carlo over sampled orders → labor $/year | [Notes §12](docs/METHODS.md#12-route-savings-simulation-monte-carlo) |
+| How many moves are worth making? | Parametric sweep of the slotting model | [Notes §13](docs/METHODS.md#13-slotting-trade-off-sweep) |
 
 The full write-up, with formulas, assumptions and limitations, is in
 **[docs/METHODS.md](docs/METHODS.md)**.
@@ -170,7 +204,7 @@ window can't open, Calidrux falls back to `http://127.0.0.1:8765` in your browse
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 calidrux          # run the app
-pytest            # 33 tests, about 3 seconds
+pytest            # 37 tests, about 3 seconds
 ```
 
 Build a Windows app and installer:
@@ -185,8 +219,8 @@ python installer\generate_icon.py
 | Output | Path |
 |---|---|
 | Standalone app | `dist\Calidrux\Calidrux.exe` |
-| Setup wizard | `dist\installer\Calidrux-Setup-0.3.0.exe` |
-| Portable zip | `dist\installer\Calidrux-Portable-0.3.0.zip` |
+| Setup wizard | `dist\installer\Calidrux-Setup-0.4.0.exe` |
+| Portable zip | `dist\installer\Calidrux-Portable-0.4.0.zip` |
 
 Data is stored in `%APPDATA%\Calidrux\` (or `~/.calidrux/Calidrux/`, or `CALIDRUX_DATA_DIR`
 if set). Databases from earlier versions are upgraded automatically.
@@ -200,7 +234,7 @@ if set). Databases from earlier versions are upgraded automatically.
 | Backend | Python 3.11+, FastAPI, uvicorn, SQLAlchemy 2, SQLite |
 | Interface | HTML, CSS, JavaScript (no framework, no build step), Chart.js |
 | Desktop | pywebview with Edge WebView2, PyInstaller, Inno Setup |
-| Quality | pytest (33 tests), GitHub Actions on Windows and Linux |
+| Quality | pytest (37 tests), GitHub Actions on Windows and Linux |
 
 More detail, including diagrams of the components, data model and request flow, is in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
