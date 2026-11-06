@@ -115,7 +115,9 @@ def _products_with_quarantine(session: Session) -> set[int]:
 
 def optimize_slotting(session: Session) -> tuple[str, list[SlottingResult]]:
     products = session.query(Product).order_by(Product.sku).all()
-    locations = session.query(Location).order_by(Location.code).all()
+    locations = (
+        session.query(Location).filter(Location.active.is_(True)).order_by(Location.code).all()
+    )
     if not products or not locations:
         return str(uuid.uuid4()), []
 

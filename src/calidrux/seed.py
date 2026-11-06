@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
 from decimal import Decimal
 
-from calidrux.db.models.batch import Batch, BatchStatus
-from calidrux.db.models.location import Location, ZoneType
+from calidrux.db.models.location import Location
 from calidrux.db.models.product import Product, StorageClass
 from calidrux.db.session import get_session, init_db
-from calidrux.services.inventory import create_batch, create_location, create_product, receive_stock
+from calidrux.services.inventory import create_product
+from calidrux.warehouse.layout import LayoutSpec, apply_layout
+from calidrux.warehouse.service import populate_demo_stock
 
 
 def seed_if_empty() -> bool:
@@ -31,7 +31,7 @@ def seed() -> None:
         _seed_data(session)
         print(
             f"Seeded {session.query(Product).count()} products, "
-            f"{session.query(Location).count()} locations."
+            f"{session.query(Location).filter(Location.active.is_(True)).count()} storage slots."
         )
 
 
@@ -72,114 +72,10 @@ def _seed_data(session) -> None:
         )
         products.append(p)
 
-    ambient_locs: list[Location] = []
-    for aisle in range(1, 6):
-        for bay in range(1, 6):
-            for level in range(1, 3):
-                code = f"A{aisle:02d}-B{bay:02d}-L{level}"
-                loc = create_location(
-                    session,
-                    code=code,
-                    zone_type=ZoneType.AMBIENT,
-                    aisle=aisle,
-                    bay=bay,
-                    level=level,
-                    x_coord=float(aisle * 10 + bay),
-                    y_coord=float(level * 3),
-                    max_weight_kg=500,
-                )
-                ambient_locs.append(loc)
-
-    cold_locs: list[Location] = []
-    for i in range(1, 11):
-        code = f"COLD-{i:02d}"
-        loc = create_location(
-            session,
-            code=code,
-            zone_type=ZoneType.COLD,
-            aisle=10,
-            bay=i,
-            level=1,
-            x_coord=100.0 + i * 2,
-            y_coord=float(i),
-            max_weight_kg=200,
-        )
-        cold_locs.append(loc)
-
-    today = date.today()
-    batch_specs = [
-        (0, "LOT-A001", 90, BatchStatus.ACTIVE),
-        (1, "LOT-A002", 180, BatchStatus.ACTIVE),
-        (2, "LOT-A003", 45, BatchStatus.ACTIVE),
-        (9, "LOT-C001", 120, BatchStatus.ACTIVE),
-        (10, "LOT-C002", 60, BatchStatus.ACTIVE),
-        (12, "LOT-R001", 365, BatchStatus.ACTIVE),
-        (19, "LOT-S001", 720, BatchStatus.ACTIVE),
-        (0, "LOT-Q001", 30, BatchStatus.QUARANTINE),
-    ]
-
-    batches: list[Batch] = []
-    for pidx, lot, days, status in batch_specs:
-        b = create_batch(
-            session,
-            product_id=products[pidx].id,
-            lot_number=lot,
-            expiry_date=today + timedelta(days=days),
-        )
-        b.status = status
-        batches.append(b)
-
+    # 6 aisles x 8 bays x 4 levels; aisle 6 is the 2–8 °C cold room.
+    apply_layout(session, LayoutSpec(aisles=6, bays_per_aisle=8, levels=4, cold_aisles=[6]))
     session.flush()
-
-    receive_stock(
-        session,
-        product_id=products[0].id,
-        batch_id=batches[0].id,
-        location_id=ambient_locs[0].id,
-        quantity=Decimal("500"),
-    )
-    receive_stock(
-        session,
-        product_id=products[1].id,
-        batch_id=batches[1].id,
-        location_id=ambient_locs[5].id,
-        quantity=Decimal("1200"),
-    )
-    receive_stock(
-        session,
-        product_id=products[2].id,
-        batch_id=batches[2].id,
-        location_id=ambient_locs[10].id,
-        quantity=Decimal("800"),
-    )
-    receive_stock(
-        session,
-        product_id=products[9].id,
-        batch_id=batches[3].id,
-        location_id=cold_locs[0].id,
-        quantity=Decimal("200"),
-    )
-    receive_stock(
-        session,
-        product_id=products[10].id,
-        batch_id=batches[4].id,
-        location_id=cold_locs[1].id,
-        quantity=Decimal("150"),
-    )
-    receive_stock(
-        session,
-        product_id=products[12].id,
-        batch_id=batches[5].id,
-        location_id=ambient_locs[40].id,
-        quantity=Decimal("50"),
-    )
-    receive_stock(
-        session,
-        product_id=products[19].id,
-        batch_id=batches[6].id,
-        location_id=ambient_locs[45].id,
-        quantity=Decimal("30"),
-    )
+    populate_demo_stock(session)
 
 
 if __name__ == "__main__":

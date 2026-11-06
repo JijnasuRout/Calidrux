@@ -9,6 +9,7 @@ from calidrux.db.models.movement import Movement, MovementLine, MovementType
 from calidrux.db.models.pick import PickLine, PickList, PickListStatus
 from calidrux.db.models.product import Product, StorageClass
 from calidrux.db.models.slotting import SlottingRecommendation, SlottingStatus
+from calidrux.db.models.warehouse import WarehouseLayout
 
 __all__ = [
     "AbcSnapshot",
@@ -27,5 +28,6 @@ __all__ = [
     "SlottingRecommendation",
     "SlottingStatus",
     "StorageClass",
+    "WarehouseLayout",
     "ZoneType",
 ]

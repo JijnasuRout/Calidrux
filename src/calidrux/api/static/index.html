@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calidrux — Pharmaceutical Warehouse Optimizer</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/warehouse.css">
 </head>
 <body>
   <div class="layout">
@@ -18,10 +19,24 @@
           <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm9-9a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zm0 7a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1h-2a1 1 0 01-1-1v-5z"/></svg>
           Dashboard
         </a>
-        <a href="#" class="nav-item" data-view="inventory">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 9a1 1 0 000 2h14a1 1 0 000-2H3zm0 4a1 1 0 000 2h14a1 1 0 000-2H3z"/></svg>
-          Inventory
+        <div class="nav-group">Warehouse Ops</div>
+        <a href="#" class="nav-item" data-view="floor">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.5A1.5 1.5 0 013.5 3h13A1.5 1.5 0 0118 4.5v11a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 15.5v-11zM4 5v3h3V5H4zm5 0v3h2V5H9zm4 0v3h3V5h-3zM4 10v5h3v-5H4zm5 0v5h2v-5H9zm4 0v5h3v-5h-3z"/></svg>
+          Floor Map
         </a>
+        <a href="#" class="nav-item" data-view="receive">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 011 1v7.59l2.3-2.3a1 1 0 111.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.42L9 10.59V3a1 1 0 011-1zM3 14a1 1 0 011 1v1h12v-1a1 1 0 112 0v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2a1 1 0 011-1z"/></svg>
+          Receive Stock
+        </a>
+        <a href="#" class="nav-item" data-view="expiry">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.29.7l2.5 2.5a1 1 0 001.42-1.4L11 9.58V6z" clip-rule="evenodd"/></svg>
+          Expiry Board
+        </a>
+        <a href="#" class="nav-item" data-view="layout">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v4h-6V3zM3 11h6v6H3v-6zm8-2h6v8h-6V9z"/></svg>
+          Layout Designer
+        </a>
+        <div class="nav-group">Optimization</div>
         <a href="#" class="nav-item" data-view="abc">
           <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm9-3a1 1 0 10-2 0v3.586l-1.707 1.707a1 1 0 001.414 1.414l2-2A1 1 0 0011 11V7z"/></svg>
           ABC Analysis
@@ -33,6 +48,11 @@
         <a href="#" class="nav-item" data-view="picking">
           <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 000-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 000-2H7zm3 0a1 1 0 000 2h3a1 1 0 000-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
           Picking
+        </a>
+        <div class="nav-group">Records</div>
+        <a href="#" class="nav-item" data-view="inventory">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 9a1 1 0 000 2h14a1 1 0 000-2H3zm0 4a1 1 0 000 2h14a1 1 0 000-2H3z"/></svg>
+          Inventory
         </a>
         <a href="#" class="nav-item" data-view="audit">
           <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.553.894l-4 2A1 1 0 016 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
@@ -52,5 +72,7 @@
   <div id="toast-container"></div>
   <script src="/static/vendor/chart.umd.min.js"></script>
   <script src="/static/app.js"></script>
+  <script src="/static/warehouse.js"></script>
+  <script src="/static/warehouse-ops.js"></script>
 </body>
 </html>

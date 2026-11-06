@@ -35,6 +35,7 @@ from calidrux.optimization.slotting import (
     reject_recommendation,
 )
 from calidrux.services.audit import list_audit_logs
+from calidrux.warehouse.routes import router as warehouse_router
 from calidrux.services.inventory import (
     InventoryError,
     adjust_stock,
@@ -157,6 +158,7 @@ def _err(msg: str, code: int = 400) -> HTTPException:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Calidrux", docs_url=None, redoc_url=None)
+    app.include_router(warehouse_router)
     static = _static_dir()
     if static.exists():
         app.mount("/static", StaticFiles(directory=str(static)), name="static")

@@ -78,8 +78,11 @@ def delete_product(session: Session, product: Product) -> None:
 # --- Location CRUD ---
 
 
-def list_locations(session: Session) -> list[Location]:
-    return session.query(Location).order_by(Location.code).all()
+def list_locations(session: Session, include_inactive: bool = False) -> list[Location]:
+    q = session.query(Location)
+    if not include_inactive:
+        q = q.filter(Location.active.is_(True))
+    return q.order_by(Location.code).all()
 
 
 def create_location(session: Session, **kwargs: Any) -> Location:
@@ -149,6 +152,8 @@ def receive_stock(
     location = session.get(Location, location_id)
     if not product or not batch or not location:
         raise InventoryError("Invalid product, batch, or location")
+    if not location.active:
+        raise InventoryError(f"Location {location.code} is not part of the current layout")
     validate_cold_chain(product, location)
     validate_batch_pickable(batch)
 
@@ -200,6 +205,8 @@ def transfer_stock(
     to_loc = session.get(Location, to_location_id)
     if not product or not batch or not from_loc or not to_loc:
         raise InventoryError("Invalid transfer parameters")
+    if not to_loc.active:
+        raise InventoryError(f"Location {to_loc.code} is not part of the current layout")
     validate_cold_chain(product, to_loc)
 
     src = _get_or_create_inventory(session, product_id, batch_id, from_location_id)
@@ -427,7 +434,7 @@ def get_dashboard_kpis(session: Session) -> dict[str, Any]:
     from calidrux.db.models.pick import PickList, PickListStatus
 
     product_count = session.query(func.count(Product.id)).scalar() or 0
-    location_count = session.query(func.count(Location.id)).scalar() or 0
+    location_count = session.query(func.count(Location.id)).filter(Location.active.is_(True)).scalar() or 0
     stock_lines = session.query(func.count(Inventory.id)).filter(Inventory.quantity > 0).scalar() or 0
     open_picks = (
         session.query(func.count(PickList.id))
