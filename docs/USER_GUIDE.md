@@ -3,32 +3,38 @@
 A tour of every screen. On first launch Calidrux loads a sample warehouse, so everything
 below works straight away.
 
+The app is laid out as a drawing set, so each screen is a numbered **sheet** (G-001, W-101
+and so on) listed in the sheet index on the left. The title block in the bottom-right
+corner of each sheet shows its number, scale and revision. To change the look or add your
+own sheets, see [CUSTOMIZING.md](CUSTOMIZING.md).
+
 > **Tip:** press <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>/</kbd>) anywhere to search
-> screens, products, lots and racks.
+> sheets, products, lots and racks.
 
-## Overview
+## G-001 Cover sheet
 
-The home screen: units stored, stock value, slot and cold-room use, what expires soon,
-open picks, a live mini-map of the floor, the most urgent lots and recent activity. Every
-tile is clickable and takes you to the detail behind it.
+The first sheet: project data (units stored, stock value, slot and cold-room use), a key
+plan of the floor, an inventory schedule by expiry bucket, general notes written from the
+live numbers, the sheet index and a revision history built from the audit log.
 
-![Overview](screenshots/overview.png)
+![Cover sheet](screenshots/overview.png)
 
-## Floor Map
+## W-101 Floor plan
 
 A top-down plan of the warehouse.
 
 - Each tile is a **rack**, and the bars inside it are its **shelf levels**.
 - **Expiry** mode colours each shelf by its most urgent lot: red = expired,
-  orange = ≤ 30 days, amber = 31–90, light blue = 91–180, blue = later.
+  orange-red = ≤ 30 days, yellow highlighter = 31–90, light blue = 91–180, blue = later.
+  A red triangle on a rack's corner means it holds expired stock.
 - **Occupancy** mode shows how full each shelf is; **Zones** highlights the cold room.
-- Type in the search box to find a SKU, product name or lot. The matching racks pulse and
-  everything else fades.
+- Type in the search box to find a SKU, product name or lot. The matching racks are
+  outlined and everything else fades.
 - Use <kbd>−</kbd> / <kbd>Fit</kbd> / <kbd>＋</kbd> to zoom.
 
-![Floor map](screenshots/floor-map.png)
+![Floor plan](screenshots/floor-map.png)
 
-### Rack inspector
+### Rack elevation
 
 Click any rack to open its front view. Cartons drop onto each shelf, sized by quantity
 and coloured by expiry. Click a carton to see the lot: an expiry countdown, quantity,
@@ -40,9 +46,9 @@ value, slot and the date it was received. From there you can:
 
 Use <kbd>←</kbd> <kbd>→</kbd> to step through racks and <kbd>Esc</kbd> to close.
 
-![Rack inspector](screenshots/rack-inspector.png)
+![Rack elevation](screenshots/rack-inspector.png)
 
-## Receive Stock
+## W-102 Receiving & put-away
 
 1. Choose the product. Cold-chain products are flagged.
 2. Enter the lot number, expiry date and quantity. If the lot already exists, its expiry
@@ -53,7 +59,7 @@ Use <kbd>←</kbd> <kbd>→</kbd> to step through racks and <kbd>Esc</kbd> to cl
 
 ![Receive](screenshots/receive.png)
 
-## Expiry Board
+## W-103 Expiry schedule
 
 Every lot in the building, grouped by how soon it expires.
 
@@ -63,9 +69,9 @@ Every lot in the building, grouped by how soon it expires.
   Expired lots get a one-click **Put lot on hold** button.
 - Filter by text, zone, or "on hold only".
 
-![Expiry board](screenshots/expiry-board.png)
+![Expiry schedule](screenshots/expiry-board.png)
 
-## Layout Designer
+## W-104 Layout
 
 Set the size of the warehouse: aisles, bays per aisle, levels, which aisles are cold
 rooms, slot capacity, weight limits and spacing. The preview marks **new** racks and racks
@@ -74,7 +80,7 @@ blocked and the panel lists the slots to clear first.
 
 ![Layout designer](screenshots/layout-designer.png)
 
-## Optimization Lab
+## A-201 Optimization lab
 
 Sliders drive four live what-if analyses. The four cards at the top summarise the impact
 in dollars and percentages. Nothing in the warehouse changes.
@@ -89,22 +95,22 @@ in dollars and percentages. Nothing in the warehouse changes.
   the Slotting screen.
 - **ABC sensitivity:** move the A and B cut-offs and watch the Pareto chart re-classify.
 
-![Optimization Lab](screenshots/optimization-lab.png)
+![Optimization lab](screenshots/optimization-lab.png)
 
-## ABC Analysis
+## A-202 ABC analysis
 
 Classifies every SKU by usage value (picks × unit cost) into A, B and C, with a Pareto
 chart. You can change the thresholds and save snapshots.
 
 ![ABC analysis](screenshots/abc-analysis.png)
 
-## Slotting
+## A-203 Slotting
 
 Runs an OR-Tools assignment model that proposes the best slot for each product. You can
 accept or reject each move, or accept all of them. Accepting moves the stock and records
 it in the audit log.
 
-## Picking
+## A-204 Pick routes
 
 Build a pick list from product dropdowns, or use **Fill 6 random lines** for a demo.
 Calidrux chooses lots by FEFO and orders the stops with a TSP solver. The route is drawn
@@ -113,7 +119,7 @@ on the floor plan next to the aisle-by-aisle baseline, with the distance saved. 
 
 ![Pick route](screenshots/pick-route.png)
 
-## Inventory, Audit Log, Settings
+## R-301 Inventory register, R-302 Audit log, R-303 Settings
 
 - **Inventory:** products, slots, lots, stock, manual receive, transfer and adjust, and
   CSV import. IDs are chosen from dropdowns.

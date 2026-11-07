@@ -25,7 +25,7 @@ $venv    = "$root\.venv\Scripts"
 $python  = "$venv\python.exe"
 $pip     = "$venv\pip.exe"
 $pyi     = "$venv\pyinstaller.exe"
-$version = "0.4.0"
+$version = "0.5.0"
 
 Push-Location $root
 try {

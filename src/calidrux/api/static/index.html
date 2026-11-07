@@ -8,74 +8,43 @@
   <link rel="stylesheet" href="/static/warehouse.css">
   <link rel="stylesheet" href="/static/motion.css">
   <link rel="stylesheet" href="/static/lab.css">
+  <link rel="stylesheet" href="/static/theme.css">     <!-- design tokens: edit this to restyle -->
+  <link rel="stylesheet" href="/static/drawing.css">   <!-- the engineering-drawing skin -->
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 </head>
 <body>
-  <div id="splash"><div class="sp-inner"><div class="sp-mark">Cx</div><div class="sp-name">Calidrux</div>
-    <div class="sp-sub">Pharmaceutical Warehouse Optimizer</div><div class="sp-bar"><i></i></div></div></div>
   <div class="layout">
     <aside class="sidebar">
       <div class="brand">
         <span class="brand-mark">Cx</span>
-        <span class="brand-name">Calidrux</span>
+        <span class="brand-name">Calidrux<small>Warehouse drawing set</small></span>
       </div>
       <nav class="nav">
-        <a href="#" class="nav-item active" data-view="dashboard">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 9a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm9-9a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zm0 7a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1h-2a1 1 0 01-1-1v-5z"/></svg>
-          Overview
-        </a>
-        <div class="nav-group">Warehouse Ops</div>
-        <a href="#" class="nav-item" data-view="floor">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.5A1.5 1.5 0 013.5 3h13A1.5 1.5 0 0118 4.5v11a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 15.5v-11zM4 5v3h3V5H4zm5 0v3h2V5H9zm4 0v3h3V5h-3zM4 10v5h3v-5H4zm5 0v5h2v-5H9zm4 0v5h3v-5h-3z"/></svg>
-          Floor Map
-        </a>
-        <a href="#" class="nav-item" data-view="receive">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 011 1v7.59l2.3-2.3a1 1 0 111.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.42L9 10.59V3a1 1 0 011-1zM3 14a1 1 0 011 1v1h12v-1a1 1 0 112 0v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2a1 1 0 011-1z"/></svg>
-          Receive Stock
-        </a>
-        <a href="#" class="nav-item" data-view="expiry">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.29.7l2.5 2.5a1 1 0 001.42-1.4L11 9.58V6z" clip-rule="evenodd"/></svg>
-          Expiry Board
-        </a>
-        <a href="#" class="nav-item" data-view="layout">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v4h-6V3zM3 11h6v6H3v-6zm8-2h6v8h-6V9z"/></svg>
-          Layout Designer
-        </a>
-        <div class="nav-group">Optimization</div>
-        <a href="#" class="nav-item" data-view="lab">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a1 1 0 000 2v4.3L3.2 15.1A2 2 0 005 18h10a2 2 0 001.8-2.9L13 8.3V4a1 1 0 100-2H7zm4 2v4.6c0 .2 0 .3.1.5l1.5 2.9H7.4L9 9.1c0-.2.1-.3.1-.5V4h2z"/></svg>
-          Optimization Lab <span class="nav-new">NEW</span>
-        </a>
-        <a href="#" class="nav-item" data-view="abc">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm9-3a1 1 0 10-2 0v3.586l-1.707 1.707a1 1 0 001.414 1.414l2-2A1 1 0 0011 11V7z"/></svg>
-          ABC Analysis
-        </a>
-        <a href="#" class="nav-item" data-view="slotting">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/></svg>
-          Slotting
-        </a>
-        <a href="#" class="nav-item" data-view="picking">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 000-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 000-2H7zm3 0a1 1 0 000 2h3a1 1 0 000-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
-          Picking
-        </a>
+        <div class="nav-group">General</div>
+        <a href="#" class="nav-item active" data-view="dashboard"><span class="sheet-no">G-001</span>Cover sheet</a>
+        <div class="nav-group">Warehouse</div>
+        <a href="#" class="nav-item" data-view="floor"><span class="sheet-no">W-101</span>Floor plan</a>
+        <a href="#" class="nav-item" data-view="receive"><span class="sheet-no">W-102</span>Receiving</a>
+        <a href="#" class="nav-item" data-view="expiry"><span class="sheet-no">W-103</span>Expiry schedule</a>
+        <a href="#" class="nav-item" data-view="layout"><span class="sheet-no">W-104</span>Layout</a>
+        <div class="nav-group">Analysis</div>
+        <a href="#" class="nav-item" data-view="lab"><span class="sheet-no">A-201</span>Optimization lab</a>
+        <a href="#" class="nav-item" data-view="abc"><span class="sheet-no">A-202</span>ABC analysis</a>
+        <a href="#" class="nav-item" data-view="slotting"><span class="sheet-no">A-203</span>Slotting</a>
+        <a href="#" class="nav-item" data-view="picking"><span class="sheet-no">A-204</span>Pick routes</a>
         <div class="nav-group">Records</div>
-        <a href="#" class="nav-item" data-view="inventory">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 9a1 1 0 000 2h14a1 1 0 000-2H3zm0 4a1 1 0 000 2h14a1 1 0 000-2H3z"/></svg>
-          Inventory
-        </a>
-        <a href="#" class="nav-item" data-view="audit">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.553.894l-4 2A1 1 0 016 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/></svg>
-          Audit Log
-        </a>
-        <a href="#" class="nav-item" data-view="settings">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-          Settings
-        </a>
+        <a href="#" class="nav-item" data-view="inventory"><span class="sheet-no">R-301</span>Inventory register</a>
+        <a href="#" class="nav-item" data-view="audit"><span class="sheet-no">R-302</span>Audit log</a>
+        <a href="#" class="nav-item" data-view="settings"><span class="sheet-no">R-303</span>Settings</a>
       </nav>
       <div class="sidebar-footer">Pharma WH Optimizer</div>
     </aside>
     <main class="main">
-      <div id="view-content"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+      <div class="sheet">
+        <div class="sheet-zones" aria-hidden="true"></div>
+        <div id="view-content"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+        <div class="title-block" id="title-block" aria-label="Title block"></div>
+      </div>
     </main>
   </div>
   <div id="toast-container"></div>
@@ -84,6 +53,7 @@
   <script src="/static/warehouse.js"></script>
   <script src="/static/warehouse-ops.js"></script>
   <script src="/static/motion.js"></script>
+  <script src="/static/sheet.js"></script>
   <script src="/static/palette.js"></script>
   <script src="/static/overview.js"></script>
   <script src="/static/enhance.js"></script>

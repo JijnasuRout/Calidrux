@@ -114,7 +114,7 @@ async function viewLab() {
   const vc = document.getElementById('view-content');
   vc.innerHTML = `
     <div class="page-header">
-      <div><h1 class="page-title">Optimization Lab</h1>
+      <div><h1 class="page-title">Optimization lab</h1>
         <div class="page-sub">Move the sliders and every number recomputes from your live warehouse: expiry risk, route savings, slotting trade-offs and ABC sensitivity. What-if only — nothing in the warehouse changes.</div></div>
       <span class="lab-badge"><i></i>What-if mode</span>
     </div>
@@ -248,7 +248,7 @@ function panelExpiry() {
         <td><div class="lab-sold"><i style="width:${(l.soldShare * 100).toFixed(0)}%"></i></div><small>${(l.soldShare * 100).toFixed(0)}% · ${fmt(l.consumed)} of ${fmt(l.qty)}</small></td>
         <td><b style="color:#dc2626">${usd(l.wasteValue)}</b><br><small>${fmt(l.waste)} u</small></td>
         <td>${l.days_left < 0 ? 'Quarantine & destroy' : l.days_left <= 30 ? 'Discount or redistribute now' : l.days_left <= 90 ? 'Move to golden zone, promote' : 'Cut the next order'}</td></tr>`).join('')}
-      </tbody></table></div>` : '<div class="empty">No write-off expected in this horizon at this demand. 🎉</div>';
+      </tbody></table></div>` : '<div class="empty">No write-off expected in this horizon at this demand.</div>';
   };
   bindSlider('mult', v => '×' + v.toFixed(2), v => { e.mult = v; redraw(); });
   bindSlider('upp', v => v + ' u', v => { e.upp = v; redraw(); });

@@ -37,15 +37,19 @@ src/calidrux/
 │   ├── app.py              # REST routes for inventory, ABC, slotting, picking, audit, settings
 │   └── static/             # the UI (no build step)
 │       ├── index.html
-│       ├── style.css       # base theme (blue & white)
+│       ├── theme.css       # design tokens: colours, fonts, strokes (edit this first)
+│       ├── drawing.css     # the engineering-drawing skin, loaded last
+│       ├── sheet.js        # sheet numbers, title block, zone border
+│       ├── fonts/          # bundled B612 / B612 Mono (OFL)
+│       ├── style.css       # base layout
 │       ├── app.js          # original screens + view router
 │       ├── warehouse.js    # floor map renderer + rack inspector
 │       ├── warehouse-ops.js# receive & put-away, expiry board, layout designer
-│       ├── overview.js     # Overview dashboard
+│       ├── overview.js     # G-001 cover sheet
 │       ├── palette.js      # Ctrl+K command palette
 │       ├── enhance.js      # picking route map, dropdown pickers, slotting/audit upgrades
 │       ├── lab.js/.css     # Optimization Lab: sliders, live what-if charts
-│       ├── motion.js/.css  # transitions, sliding indicators, toasts, chart defaults
+│       ├── motion.js/.css  # toasts, chart defaults (decorative motion switched off)
 │       └── warehouse.css
 ├── analytics/
 │   └── lab.py              # Optimization Lab: route Monte Carlo, slotting what-if & sweep (/api/lab/*)

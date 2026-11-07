@@ -100,7 +100,7 @@ async function viewDashboard() {
 // ── Inventory ─────────────────────────────────────────────────────────────────
 async function viewInventory() {
   document.getElementById('view-content').innerHTML = `
-    <div class="page-header"><h1 class="page-title">Inventory</h1></div>
+    <div class="page-header"><h1 class="page-title">Inventory register</h1></div>
     <div class="tabs">
       ${['products','locations','batches','stock','receive','transfer','movements']
         .map(t => `<div class="tab${_invTab===t?' active':''}" onclick="switchInv('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('')}
@@ -382,7 +382,7 @@ async function importCSV(input, type) {
 // ── ABC Analysis ──────────────────────────────────────────────────────────────
 async function viewABC() {
   document.getElementById('view-content').innerHTML = `
-    <div class="page-header"><h1 class="page-title">ABC Analysis</h1></div>
+    <div class="page-header"><h1 class="page-title">ABC analysis</h1></div>
     <div class="card">
       <div class="card-title">Run Analysis</div>
       <form onsubmit="runABC(event)">
@@ -538,7 +538,7 @@ async function rejectRec(id) {
 // ── Picking ───────────────────────────────────────────────────────────────────
 async function viewPicking() {
   document.getElementById('view-content').innerHTML = `
-    <div class="page-header"><h1 class="page-title">Picking</h1></div>
+    <div class="page-header"><h1 class="page-title">Pick routes</h1></div>
     <div class="tabs">
       <div class="tab${_pickTab==='lists'?' active':''}" onclick="switchPick('lists')">Pick Lists</div>
       <div class="tab${_pickTab==='metrics'?' active':''}" onclick="switchPick('metrics')">Efficiency Metrics</div>
@@ -672,7 +672,7 @@ async function viewAudit() {
   const rows = logs.map(l => [l.id, l.created_at, l.entity_type, l.entity_id, l.action, l.user_name, l.notes]);
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
-      <h1 class="page-title">Audit Log</h1>
+      <h1 class="page-title">Audit log</h1>
       <button class="btn btn-ghost" onclick="showView('audit')">↺ Refresh</button>
     </div>
     <div class="card">
@@ -696,14 +696,14 @@ async function viewSettings() {
           <div class="form-group"><label>Dispatch dock Y</label>
             <input name="dispatch_y" type="number" step="0.1" value="${cfg.dispatch_y}"></div>
         </div>
-        <div style="margin-top:18px;margin-bottom:8px;font-weight:600;font-size:13px;color:var(--muted)">ABC THRESHOLDS</div>
+        <div style="margin-top:18px;margin-bottom:8px;font-weight:600;font-size:13px;color:var(--muted)">ABC thresholds</div>
         <div class="form-grid">
           <div class="form-group"><label>Class A (cumulative %)</label>
             <input name="abc_threshold_a" type="number" step="0.01" min="0" max="1" value="${cfg.abc_threshold_a}"></div>
           <div class="form-group"><label>Class B (cumulative %)</label>
             <input name="abc_threshold_b" type="number" step="0.01" min="0" max="1" value="${cfg.abc_threshold_b}"></div>
         </div>
-        <div style="margin-top:18px;margin-bottom:8px;font-weight:600;font-size:13px;color:var(--muted)">SLOTTING WEIGHTS</div>
+        <div style="margin-top:18px;margin-bottom:8px;font-weight:600;font-size:13px;color:var(--muted)">Slotting weights</div>
         <div class="form-grid">
           <div class="form-group"><label>ABC distance penalty</label>
             <input name="slotting_w_abc" type="number" step="0.1" value="${cfg.slotting_w_abc}"></div>

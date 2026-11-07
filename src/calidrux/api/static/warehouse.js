@@ -16,12 +16,15 @@ const WH = {
   layoutDraft: null,
 };
 
+// Status colors follow drawing mark-up conventions: redline for problems,
+// highlighter for warnings, cobalt for healthy stock. Values live in theme.css.
+const _tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const BUCKETS = {
-  expired:  { label: 'Expired',     short: 'Expired',  color: '#dc2626', soft: '#fee2e2' },
-  critical: { label: '≤ 30 days',   short: '≤30 d',    color: '#f97316', soft: '#ffedd5' },
-  warning:  { label: '31–90 days',  short: '31–90 d',  color: '#f59e0b', soft: '#fef3c7' },
-  watch:    { label: '91–180 days', short: '91–180 d', color: '#60a5fa', soft: '#dbeafe' },
-  ok:       { label: '> 180 days',  short: '>180 d',   color: '#1d4ed8', soft: '#dbeafe' },
+  expired:  { label: 'Expired',     short: 'Expired',  color: _tok('--redline') || '#C8102E',   soft: '#FCEBEE' },
+  critical: { label: '≤ 30 days',   short: '≤30 d',    color: _tok('--redline-2') || '#D2461F', soft: '#FBEAE4' },
+  warning:  { label: '31–90 days',  short: '31–90 d',  color: _tok('--highlight-ink') || '#8A6A00', fill: _tok('--highlight') || '#F2C230', soft: '#FFF6D6' },
+  watch:    { label: '91–180 days', short: '91–180 d', color: _tok('--watch') || '#7D93D6',     soft: '#EEF1FA' },
+  ok:       { label: '> 180 days',  short: '>180 d',   color: _tok('--ok') || '#1B3A94',        soft: '#F2F5FC' },
 };
 const BUCKET_ORDER = ['expired', 'critical', 'warning', 'watch', 'ok'];
 
@@ -67,6 +70,8 @@ async function whApi(method, path, body) {
 
 function countUp(el, to, { decimals = 0, prefix = '', suffix = '', format } = {}) {
   if (!el) return;
+  el.textContent = format ? format(to) : prefix + fmt(to, decimals) + suffix;  // drawing skin: print, don't animate
+  return;
   const start = performance.now(), dur = 900;
   const step = now => {
     const t = Math.min(1, (now - start) / dur);
@@ -143,10 +148,10 @@ const holdChip = '<span class="wh-chip hold">On hold</span>';
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function levelColor(mode, rack, lvl) {
-  if (rack.zone === 'cold' && mode === 'zone') return '#38bdf8';
-  if (mode === 'zone') return '#93a4c3';
-  if (mode === 'occupancy') return lvl.utilization > 0.9 ? 'var(--blue-900)' : 'var(--blue-600)';
-  return lvl.bucket ? BUCKETS[lvl.bucket].color : 'transparent';
+  if (rack.zone === 'cold' && mode === 'zone') return 'var(--cold)';
+  if (mode === 'zone') return 'var(--line)';
+  if (mode === 'occupancy') return 'var(--ink)';
+  return lvl.bucket ? (BUCKETS[lvl.bucket].fill || BUCKETS[lvl.bucket].color) : 'transparent';
 }
 
 function renderFloor(el, data, opts = {}) {
@@ -172,6 +177,7 @@ function renderFloor(el, data, opts = {}) {
     if (key === sel) cls.push('sel');
     if (marks.has(key)) cls.push('mark');
     if (r.quarantine) cls.push('hold');
+    if (r.bucket) cls.push('bk-' + r.bucket);
     const top = mode === 'expiry' && r.bucket ? BUCKETS[r.bucket].color : 'transparent';
     const levels = [...r.levels].sort((x, y) => y.level - x.level).map(l =>
       `<i style="--u:${Math.min(1, l.utilization || 0)};--c:${levelColor(mode, r, l)}"></i>`).join('');
@@ -185,12 +191,14 @@ function renderFloor(el, data, opts = {}) {
     </button>`;
   };
 
+  let rowIdx = 0;
   const row = a => {
     let tiles = '';
+    const ri = rowIdx++;
     for (let b = 1; b <= maxBays; b++) tiles += tile(a.aisle, b);
     return `<div class="wh-row ${a.zone}">
       <div class="wh-row-label"><b>A${pad2(a.aisle)}</b>${compact ? '' : `<small>${a.zone === 'cold' ? 'Cold' : 'Ambient'}</small>`}</div>
-      <div class="wh-row-racks" style="grid-template-columns:repeat(${maxBays}, var(--rack-w))">${tiles}</div>
+      <div class="wh-row-racks" style="grid-template-columns:repeat(${maxBays}, var(--rack-w));--r:${ri}">${tiles}</div>
     </div>`;
   };
 
@@ -216,10 +224,13 @@ function renderFloor(el, data, opts = {}) {
   }
 
   const base = compact ? 30 : 58;
+  const lay = data.layout;
+  const dim = !compact && lay ? `<div class="dwg-dim h" style="left:58px"><i></i><span>${fmt(maxBays * lay.bay_width_m, 1)} m · ${maxBays} bays @ ${lay.bay_width_m} m</span><i></i></div>` : '';
   el.innerHTML = `<div class="wh-building ${compact ? 'compact' : ''}" style="--rack-w:${Math.round(base * (opts.zoom || 1))}px">
-      <div class="wh-dock"><span>Receiving &amp; dispatch dock</span><b class="wh-dock-door"></b></div>
-      <div class="wh-floorplan">${header}${body}</div>
+      <div class="wh-dock"><span>Dock</span><b class="wh-dock-door"></b></div>
+      <div class="wh-floorplan">${dim}${header}${body}</div>
     </div>`;
+  el.classList.toggle('plot', !!opts.plot);
 
   // Interactions (delegated)
   el.onclick = e => {
@@ -256,7 +267,7 @@ function floorLegend(mode) {
     <span class="lg"><i style="background:var(--blue-900)"></i>Over 90% full</span>`;
   if (mode === 'zone') return `<span class="lg"><i style="background:#38bdf8"></i>Cold room (2–8 °C)</span><span class="lg"><i style="background:#93a4c3"></i>Ambient</span>`;
   return BUCKET_ORDER.map(k => `<span class="lg"><i style="background:${BUCKETS[k].color}"></i>${BUCKETS[k].label}</span>`).join('') +
-    `<span class="lg"><i class="lg-hold"></i>Lot on hold</span><span class="lg muted">Each bar is one shelf level · colour = earliest expiry on it</span>`;
+    `<span class="lg"><i class="lg-hold"></i>Lot on hold</span><span class="lg"><i style="background:var(--redline);clip-path:polygon(50% 0,100% 100%,0 100%);border:0"></i>Expired stock in rack</span>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -272,8 +283,8 @@ async function viewFloor() {
   vc.innerHTML = `
     <div class="wh-view">
     <div class="page-header">
-      <div><h1 class="page-title">Warehouse Floor</h1>
-        <div class="page-sub">${esc(floor.layout.name)} · ${floor.aisles.length} aisles · ${k.slots} storage slots — click any rack to look inside</div></div>
+      <div><h1 class="page-title">Floor plan</h1>
+        <div class="page-sub">${esc(floor.layout.name)} · ${floor.aisles.length} aisles, ${k.slots} storage slots. Click a rack to open its elevation.</div></div>
       <div class="btn-group">
         <button class="btn btn-ghost" onclick="showView('expiry')">Expiry board</button>
         <button class="btn btn-primary" onclick="showView('receive')">＋ Receive stock</button>
@@ -287,14 +298,14 @@ async function viewFloor() {
         <div class="wh-kpi-sub">${pct(k.utilization)} of capacity</div></div></div>
       <div class="wh-kpi"><div><div class="kpi-label">Stock value</div><div class="wh-kpi-v" data-money="${k.value}"></div>
         <div class="wh-kpi-sub">${k.skus} SKUs · ${k.batches} lots</div></div></div>
-      <div class="wh-kpi cold">${ring(k.cold_utilization, { size: 58, stroke: 7, color: '#0ea5e9' })}
+      <div class="wh-kpi cold">${ring(k.cold_utilization, { size: 58, stroke: 7, color: 'var(--cold)' })}
         <div><div class="kpi-label">Cold room fill</div><div class="wh-kpi-sub">2–8 °C storage</div></div></div>
       <div class="wh-kpi warn" onclick="WH.expiryFilter.bucket='critical';showView('expiry')">
         <div><div class="kpi-label">Expiring ≤ 30 days</div><div class="wh-kpi-v" data-count="${k.critical_lines}"></div>
-        <div class="wh-kpi-sub">stock lines →</div></div></div>
+        <div class="wh-kpi-sub">stock lines</div></div></div>
       <div class="wh-kpi danger" onclick="WH.expiryFilter.bucket='expired';showView('expiry')">
         <div><div class="kpi-label">Expired · On hold</div><div class="wh-kpi-v"><span data-count="${k.expired_lines}"></span><small> · ${k.quarantine_lines}</small></div>
-        <div class="wh-kpi-sub">needs action →</div></div></div>
+        <div class="wh-kpi-sub">need action</div></div></div>
     </div>
 
     ${lowStock ? `<div class="wh-empty-banner">
@@ -319,7 +330,14 @@ async function viewFloor() {
         </div>
       </div>
       <div class="wh-map-scroll"><div id="wh-floor"></div></div>
-      <div class="wh-legend" id="wh-legend">${floorLegend(WH.mode)}</div>
+      <div class="dwg-legend-bar">
+        <div class="wh-legend" id="wh-legend">${floorLegend(WH.mode)}</div>
+        <div style="display:flex;gap:18px;align-items:flex-end">
+          <div class="dwg-scale"><div class="bar"><i></i><i></i><i></i><i></i></div><div class="lbl"><span>0</span><span>5</span><span>10 m</span></div></div>
+          <svg class="dwg-north" viewBox="0 0 34 44" aria-label="North"><circle cx="17" cy="27" r="13" fill="none" stroke="var(--ink)"/>
+            <path d="M17 12 L23 32 L17 27 L11 32 Z" fill="var(--ink)"/><text x="17" y="9" text-anchor="middle" font-size="9" font-family="B612 Mono" fill="var(--ink)">N</text></svg>
+        </div>
+      </div>
     </div>
     </div>`;
 
@@ -344,7 +362,7 @@ function drawFloor(animate) {
   const el = $('#wh-floor');
   if (!el || !WH.floor) return;
   const { hits } = renderFloor(el, WH.floor, {
-    mode: WH.mode, query: WH.query, zoom: WH.zoom,
+    mode: WH.mode, query: WH.query, zoom: WH.zoom, plot: animate,
     selected: WH.rack ? { aisle: WH.rack.aisle, bay: WH.rack.bay } : null,
     onRack: (a, b) => openRack(a, b),
   });
@@ -449,7 +467,7 @@ function renderRack(highlight) {
     </div>
     <div class="wh-dr-body">
       <div class="wh-dr-stats">
-        ${ring(r.utilization, { size: 84, stroke: 9, color: r.zone === 'cold' ? '#0ea5e9' : 'var(--blue-600)' })}
+        ${ring(r.utilization, { size: 84, stroke: 9, color: r.zone === 'cold' ? 'var(--cold)' : 'var(--ink)' })}
         <div class="wh-dr-statgrid">
           <div><span>Units</span><b>${fmt(r.quantity)}<small> / ${fmt(r.capacity)}</small></b></div>
           <div><span>Value</span><b>${money(r.value)}</b></div>
@@ -458,6 +476,8 @@ function renderRack(highlight) {
         </div>
       </div>
       <div class="wh-elev-wrap ${r.zone}">${rackSvg(r)}</div>
+      <div class="dwg-title"><span class="bub"><span>1</span></span>
+        <div><b>Elevation — aisle ${pad2(r.aisle)}, bay ${pad2(r.bay)}${r.zone === 'cold' ? ' (cold room)' : ''}</b><small>Scale 1:25 · ${r.levels.length} levels · ${fmt(r.capacity)} units capacity</small></div></div>
       <div class="wh-elev-hint">${items.length ? 'Each carton ≈ 1/16 of a shelf · click a carton to see its lot' : 'This rack is empty.'}</div>
       <div id="wh-item"></div>
       ${items.length ? `<div class="wh-dr-section">Contents by level</div>
@@ -517,13 +537,13 @@ function rackSvg(r) {
       if (!cur || cur.it !== s.it) { flush(); cur = s; grp = ''; }
       const col = idx % CART_COLS, rowi = Math.floor(idx / CART_COLS);
       const x = x0 + col * cw + 2, y = beamY - (rowi + 1) * ch - 1;
-      const c = BUCKETS[s.it.bucket].color;
+      const c = BUCKETS[s.it.bucket].fill || BUCKETS[s.it.bucket].color;
       grp += `<g class="wh-carton" style="--d:${(L - lvl.level) * 70 + idx * 28 + 80}ms">
         <rect x="${x}" y="${y}" width="${cw - 4}" height="${ch - 2}" rx="3" fill="${c}"/>
         <rect x="${x}" y="${y}" width="${cw - 4}" height="5" rx="2" fill="#fff" opacity=".25"/>
         <line x1="${x + (cw - 4) / 2}" y1="${y}" x2="${x + (cw - 4) / 2}" y2="${y + 5}" stroke="#fff" stroke-opacity=".5"/>
         ${s.it.status === 'quarantine' ? `<rect x="${x}" y="${y}" width="${cw - 4}" height="${ch - 2}" rx="3" fill="url(#whHatch)"/>` : ''}
-        ${s.first ? `<text x="${x + (cw - 4) / 2}" y="${y + ch / 2 + 3}" text-anchor="middle" class="wh-carton-t">${esc(s.it.sku.replace('PH-', ''))}</text>` : ''}
+        ${s.first ? `<text x="${x + (cw - 4) / 2}" y="${y + ch / 2 + 3}" text-anchor="middle" class="wh-carton-t"${s.it.bucket === 'warning' || s.it.bucket === 'watch' ? ' style="fill:var(--ink)"' : ''}>${esc(s.it.sku.replace('PH-', ''))}</text>` : ''}
       </g>`;
     });
     flush();

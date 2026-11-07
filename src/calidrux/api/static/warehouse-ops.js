@@ -17,9 +17,9 @@ async function viewReceive() {
   vc.innerHTML = `
     <div class="wh-view">
     <div class="page-header">
-      <div><h1 class="page-title">Receive &amp; Put Away</h1>
+      <div><h1 class="page-title">Receiving &amp; put-away</h1>
         <div class="page-sub">Log an incoming delivery. Calidrux checks temperature zone, space and lot rules, then picks the best slot and shows the route from the dock.</div></div>
-      <button class="btn btn-ghost" onclick="showView('floor')">View floor map</button>
+      <button class="btn btn-ghost" onclick="showView('floor')">Open floor plan</button>
     </div>
     <div class="wh-recv">
       <div class="card wh-recv-form">
@@ -165,7 +165,7 @@ function updateGoButton() {
   const lot = WH.receive.lots[f.lot.value.trim()];
   const ok = s && f.lot.value.trim() && f.expiry.value && +f.qty.value > 0 && !(lot && lot.status === 'quarantine');
   btn.disabled = !ok;
-  btn.innerHTML = s ? `Put away ${fmt(+f.qty.value)} units → <b>${esc(s.code)}</b>` : 'Put away';
+  btn.innerHTML = s ? `Put away ${fmt(+f.qty.value)} units in <b>${esc(s.code)}</b>` : 'Put away';
   const dest = $('#rcv-dest');
   if (dest) dest.textContent = s ? `→ ${s.code} · ${s.distance_m} m` : '';
 }
@@ -297,13 +297,13 @@ async function viewExpiry() {
   vc.innerHTML = `
     <div class="wh-view">
     <div class="page-header">
-      <div><h1 class="page-title">Expiry Board</h1>
+      <div><h1 class="page-title">Expiry schedule</h1>
         <div class="page-sub">Every lot in the building, ordered by how soon it expires. Click any lot to see it on its shelf.</div></div>
-      <button class="btn btn-ghost" onclick="showView('floor')">View floor map</button>
+      <button class="btn btn-ghost" onclick="showView('floor')">Open floor plan</button>
     </div>
     <div class="wh-buckets" id="exp-sum"></div>
     <div class="card">
-      <div class="card-title">Expiry timeline <span class="wh-muted" id="exp-tl-note">bubble size = units · today → 12 months</span></div>
+      <div class="card-title">Expiry timeline <span class="wh-muted" id="exp-tl-note">bubble size shows units; axis runs 12 months from today</span></div>
       <div id="exp-tl" class="wh-timeline"></div>
     </div>
     <div class="card">
@@ -370,7 +370,7 @@ function renderExpiry(data, animate) {
     const shown = rows.slice(0, 60);
     return `<div class="wh-col ${focus && focus !== k ? 'off' : ''} ${focus === k ? 'on' : ''}" style="--c:${m.color};--s:${m.soft}">
       <div class="wh-col-head"><i></i>${m.label}<span>${rows.length}</span></div>
-      <div class="wh-col-body">${shown.map((i, n) => xcard(i, n, animate)).join('') || '<div class="wh-col-empty">Nothing here 🎉</div>'}
+      <div class="wh-col-body">${shown.map((i, n) => xcard(i, n, animate)).join('') || '<div class="wh-col-empty">Nothing here</div>'}
         ${rows.length > shown.length ? `<div class="wh-col-more">+ ${rows.length - shown.length} more — refine the filter</div>` : ''}</div>
     </div>`;
   }).join('');
@@ -393,7 +393,7 @@ function xcard(i, n, animate) {
     <div class="wh-xcard-sub">${esc(i.sku)} · Lot ${esc(i.lot_number)} ${hold ? holdChip : ''}</div>
     <div class="wh-xcard-bar"><i style="width:${life * 100}%;background:${m.color}"></i></div>
     <div class="wh-xcard-meta"><span style="color:${m.color};font-weight:600">${daysText(i.days_left)}</span><span>${fmtDate(i.expiry_date)}</span></div>
-    <div class="wh-xcard-foot"><span class="wh-loc">📍 ${esc(i.location_code)}</span><span title="${money(i.value)}">${fmt(i.quantity)} units</span></div>
+    <div class="wh-xcard-foot"><span class="wh-loc">${esc(i.location_code)}</span><span title="${money(i.value)}">${fmt(i.quantity)} units</span></div>
     ${i.bucket === 'expired' && !hold ? `<button class="btn btn-danger btn-sm wh-xcard-act" data-hold="${i.batch_id}">⏸ Put lot on hold</button>` : ''}
   </div>`;
 }
@@ -419,7 +419,7 @@ function renderTimeline(items, animate) {
   const maxQ = Math.max(1, ...items.map(i => i.quantity));
   const bands = [
     [min, 0, '#fee2e2', 'Expired'], [0, 30, '#ffedd5', '≤30 d'], [30, 90, '#fef3c7', '31–90 d'],
-    [90, 180, '#e0ecff', '91–180 d'], [180, max, '#eef4ff', '> 180 days →'],
+    [90, 180, '#e0ecff', '91–180 d'], [180, max, '#eef4ff', '> 180 days'],
   ];
   // month ticks
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -464,7 +464,7 @@ function renderTimeline(items, animate) {
     tip(`<b>${esc(i.name)}</b><div>${esc(i.sku)} · Lot ${esc(i.lot_number)}</div>
       <div>${fmt(i.quantity)} units · ${money(i.value)}</div>
       <div style="color:${BUCKETS[i.bucket].color}">● ${daysText(i.days_left)} · ${fmtDate(i.expiry_date)}</div>
-      <div class="tip-muted">📍 ${esc(i.main.location_code)}${i.slots > 1 ? ` + ${i.slots - 1} more slot${i.slots > 2 ? 's' : ''}` : ''} — click to open</div>`, e);
+      <div class="tip-muted">${esc(i.main.location_code)}${i.slots > 1 ? ` + ${i.slots - 1} more slot${i.slots > 2 ? 's' : ''}` : ''} — click to open</div>`, e);
   };
   svg.onmouseleave = () => tip(null);
   svg.onclick = e => {
@@ -494,7 +494,7 @@ async function viewLayout() {
   vc.innerHTML = `
     <div class="wh-view">
     <div class="page-header">
-      <div><h1 class="page-title">Layout Designer</h1>
+      <div><h1 class="page-title">Layout</h1>
         <div class="page-sub">Set the size and zones of your warehouse. The preview updates live, and slots that hold stock are protected.</div></div>
     </div>
     ${lay.inferred ? `<div class="wh-note" style="margin-bottom:16px">This layout was detected from your existing storage slots. Applying it saves it as the official layout.</div>` : ''}

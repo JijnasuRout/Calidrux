@@ -4,19 +4,20 @@
 
 const PAL = { open: false, items: [], idx: 0, data: null, loadedAt: 0 };
 
+const SHEETS_NO = v => (typeof SHEETS !== 'undefined' && SHEETS[v] ? SHEETS[v].no.replace('-', '') : '');
 const PAL_VIEWS = [
-  ['dashboard', 'Overview', 'Today at a glance', '◎', 'home dashboard kpi'],
-  ['floor', 'Floor Map', 'Every rack, coloured by expiry', '▦', 'warehouse map racks floor plan'],
-  ['receive', 'Receive Stock', 'Log a delivery and put it away', '⤓', 'inbound goods receipt putaway'],
-  ['expiry', 'Expiry Board', 'Lots by how soon they expire', '◷', 'fefo shelf life expiring expired'],
-  ['layout', 'Layout Designer', 'Aisles, bays, levels and cold rooms', '▤', 'size configure warehouse'],
-  ['lab', 'Optimization Lab', 'What-if sliders: expiry risk, route ROI, slotting trade-offs', '⚗', 'simulation sliders what if roi savings forecast monte carlo'],
-  ['abc', 'ABC Analysis', 'Pareto classification by usage value', '◔', 'pareto classify'],
-  ['slotting', 'Slotting', 'OR-Tools slot assignment', '⇄', 'optimize optimise solver'],
-  ['picking', 'Picking', 'FEFO pick lists and TSP routes', '↯', 'pick route tsp travel'],
-  ['inventory', 'Inventory', 'Products, locations, lots and stock', '☰', 'products batches stock movements'],
-  ['audit', 'Audit Log', 'Every change, append-only', '⌕', 'history gdp trail'],
-  ['settings', 'Settings', 'User, dock position, weights', '⚙', 'preferences config'],
+  ['dashboard', 'Cover sheet', 'Today at a glance', SHEETS_NO('dashboard'), 'home dashboard kpi'],
+  ['floor', 'Floor plan', 'Every rack, coloured by expiry', SHEETS_NO('floor'), 'warehouse map racks floor plan'],
+  ['receive', 'Receive Stock', 'Log a delivery and put it away', SHEETS_NO('receive'), 'inbound goods receipt putaway'],
+  ['expiry', 'Expiry schedule', 'Lots by how soon they expire', SHEETS_NO('expiry'), 'fefo shelf life expiring expired'],
+  ['layout', 'Layout', 'Aisles, bays, levels and cold rooms', SHEETS_NO('layout'), 'size configure warehouse'],
+  ['lab', 'Optimization Lab', 'What-if sliders: expiry risk, route ROI, slotting trade-offs', SHEETS_NO('lab'), 'simulation sliders what if roi savings forecast monte carlo'],
+  ['abc', 'ABC Analysis', 'Pareto classification by usage value', SHEETS_NO('abc'), 'pareto classify'],
+  ['slotting', 'Slotting', 'OR-Tools slot assignment', SHEETS_NO('slotting'), 'optimize optimise solver'],
+  ['picking', 'Pick routes', 'FEFO pick lists and TSP routes', SHEETS_NO('picking'), 'pick route tsp travel'],
+  ['inventory', 'Inventory register', 'Products, locations, lots and stock', SHEETS_NO('inventory'), 'products batches stock movements'],
+  ['audit', 'Audit Log', 'Every change, append-only', SHEETS_NO('audit'), 'history gdp trail'],
+  ['settings', 'Settings', 'User, dock position, weights', SHEETS_NO('settings'), 'preferences config'],
 ];
 
 const PAL_ACTIONS = [

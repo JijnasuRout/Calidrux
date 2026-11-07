@@ -245,7 +245,7 @@ viewSlotting = async function () {
   const pending = recs.filter(r => r.status === 'pending');
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
-      <div><h1 class="page-title">Slotting Optimization</h1>
+      <div><h1 class="page-title">Slotting</h1>
         <div class="page-sub">OR-Tools assigns each product to the slot with the lowest combined cost — travel × ABC class, pick frequency, weight × level and relocation — while honouring cold-chain, quarantine and weight limits.</div></div>
       <button class="btn btn-primary" data-run-slotting onclick="runSlotting(this)">▶ Run solver</button>
     </div>
@@ -302,7 +302,7 @@ viewAudit = async function () {
   const types = [...new Set(logs.map(l => l.entity_type))].sort();
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
-      <div><h1 class="page-title">Audit Log</h1><div class="page-sub">Append-only record of every change — who, what and when.</div></div>
+      <div><h1 class="page-title">Audit log</h1><div class="page-sub">Append-only record of every change — who, what and when.</div></div>
       <button class="btn btn-ghost" onclick="showView('audit')">↻ Refresh</button>
     </div>
     <div class="card">

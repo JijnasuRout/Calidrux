@@ -1,0 +1,59 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Calidrux THEME TOKENS: the one file to edit to restyle the app.
+
+   The look is an engineering drawing set: blueline-print cobalt on white paper,
+   redline mark-ups for problems, highlighter for warnings. Change a value here
+   and every screen follows. See docs/CUSTOMIZING.md for a walkthrough.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Fonts ship with the app (static/fonts), so it looks the same offline.
+   B612 was designed by Airbus for cockpit displays: built for legibility. */
+@font-face { font-family: 'B612'; src: url('/static/fonts/b612-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'B612'; src: url('/static/fonts/b612-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'B612'; src: url('/static/fonts/b612-latin-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'B612 Mono'; src: url('/static/fonts/b612-mono-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'B612 Mono'; src: url('/static/fonts/b612-mono-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  /* ── Ink & paper ─────────────────────────────────────────────────────── */
+  --ink:          #1B3A94;   /* cobalt: all linework and primary text */
+  --ink-2:        #4E6199;   /* secondary text, captions */
+  --line:         #A9B7E0;   /* construction lines, borders */
+  --line-faint:   #DCE3F3;   /* table rules, empty shelf outlines */
+  --paper:        #FFFFFF;   /* the drawing sheet */
+  --tint:         #F2F5FC;   /* header rows, hover, selected rows */
+  --table:        #E6EAF3;   /* the drafting table behind the sheet */
+
+  /* ── Mark-up colors (status) ─────────────────────────────────────────── */
+  --redline:      #C8102E;   /* expired, errors: like a checker's red pen */
+  --redline-2:    #D2461F;   /* expires in 30 days or less */
+  --highlight:    #F2C230;   /* 31–90 days: highlighter fill */
+  --highlight-ink:#8A6A00;   /* text on white for the highlighter state */
+  --watch:        #7D93D6;   /* 91–180 days */
+  --ok:           #1B3A94;   /* more than 180 days */
+  --cold:         #5B9BD5;   /* the 2–8 °C cold room */
+  --hold:         #6B3FA0;   /* quality hold (quarantine) */
+
+  /* ── Type ────────────────────────────────────────────────────────────── */
+  --font:         'B612', 'Segoe UI', system-ui, sans-serif;
+  --mono:         'B612 Mono', Consolas, monospace;   /* slot codes & dimensions only */
+  --fs-sheet:     26px;      /* sheet titles */
+  --fs-h:         15px;      /* box titles */
+  --fs-body:      13px;
+  --fs-small:     11.5px;
+
+  /* ── Lines & geometry ────────────────────────────────────────────────── */
+  --stroke:       1px;       /* standard line weight */
+  --stroke-heavy: 2px;       /* sheet border, section cuts */
+  --radius:       0px;       /* drawings have square corners */
+  --gap:          16px;
+
+  /* ── Compatibility: the older stylesheets read these names ───────────── */
+  --blue-900: var(--ink); --blue-800: var(--ink); --blue-700: var(--ink); --blue-600: var(--ink);
+  --blue-500: #3F5BB5; --blue-400: var(--watch); --blue-300: var(--line); --blue-200: var(--line);
+  --blue-100: var(--line-faint); --blue-50: var(--tint);
+  --accent: var(--ink); --border: var(--line); --text: var(--ink); --muted: var(--ink-2);
+  --bg: var(--table); --card: var(--paper); --success: var(--ink); --danger: var(--redline); --warning: var(--highlight-ink);
+  --shadow: none; --shadow-md: none;
+  --sidebar-bg: var(--paper); --sidebar-text: var(--ink-2); --sidebar-hover: var(--tint);
+}

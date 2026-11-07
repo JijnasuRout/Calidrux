@@ -8,7 +8,7 @@
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.5.0';
 
 // ── Entrances ────────────────────────────────────────────────────────────────
 const ENTER_SEL = [
@@ -17,6 +17,7 @@ const ENTER_SEL = [
 ].join(',');
 
 function enterAnimate(els) {
+  return;  // drawing skin: no decorative entrances
   if (REDUCED) return;
   els.slice(0, 14).forEach((el, i) => {
     el.animate([
@@ -27,6 +28,7 @@ function enterAnimate(els) {
 }
 
 function rowsAnimate(table) {
+  return;  // drawing skin: tables appear at once
   if (REDUCED) return;
   [...table.querySelectorAll('tbody tr')].slice(0, 28).forEach((tr, i) => {
     tr.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
@@ -44,6 +46,7 @@ function topLevelMatches(node) {
 
 // ── Count-up numbers for any .kpi-value / .metric-value ─────────────────────
 function countUpText(el) {
+  return;  // drawing skin: numbers are printed, not animated
   if (REDUCED || el.dataset.counted) return;
   const raw = el.textContent.trim();
   const m = raw.match(/^([^\d-]*)(-?[\d,]*\.?\d+)(.*)$/);
@@ -89,6 +92,7 @@ function syncIndicators() {
 }
 
 function placeNavPill(view) {
+  return;  // drawing skin: active sheet is marked by a rule, not a moving pill
   const nav = document.querySelector('.nav');
   const item = nav && nav.querySelector(`.nav-item[data-view="${view}"]`);
   if (!nav || !item) return;
@@ -115,11 +119,7 @@ toast = function (msg, type = 'success') {
   box.appendChild(el);
   const life = type === 'error' ? 5200 : 3600;
   if (!REDUCED) {
-    el.animate([
-      { opacity: 0, transform: 'translateY(18px) scale(.94)' },
-      { opacity: 1, transform: 'translateY(-3px) scale(1.01)', offset: .7 },
-      { opacity: 1, transform: 'none' },
-    ], { duration: 520, easing: EASE });
+    el.animate([{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'none' }], { duration: 180, easing: 'ease-out' });
   }
   const bar = el.querySelector('.t-bar').animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: life, easing: 'linear' });
   el.onmouseenter = () => bar.pause();
@@ -136,19 +136,53 @@ toast = function (msg, type = 'success') {
 
 // ── Chart.js defaults: one look and one motion for every chart ───────────────
 if (window.Chart) {
+  const css = getComputedStyle(document.documentElement);
+  const tok = n => css.getPropertyValue(n).trim();
+  const INK = tok('--ink') || '#1B3A94', INK2 = tok('--ink-2') || '#4E6199';
   const d = Chart.defaults;
-  d.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif";
-  d.color = '#5a6f94';
-  d.borderColor = '#e6eefb';
-  d.animation.duration = REDUCED ? 0 : 1000;
-  d.animation.easing = 'easeOutQuart';
-  d.animation.delay = ctx => (ctx.type === 'data' && ctx.mode === 'default' ? ctx.dataIndex * 28 : 0);
+  d.font.family = "'B612', 'Segoe UI', sans-serif";
+  d.font.size = 11;
+  d.color = INK2;
+  d.borderColor = tok('--line-faint') || '#DCE3F3';
+  d.animation.duration = REDUCED ? 0 : 450;
+  d.animation.easing = 'easeOutQuad';
+  d.animation.delay = 0;
   Object.assign(d.plugins.tooltip, {
-    backgroundColor: 'rgba(11,42,111,.92)', padding: 10, cornerRadius: 10, titleFont: { weight: '700' },
-    boxPadding: 4, displayColors: true,
+    backgroundColor: '#fff', titleColor: INK, bodyColor: INK, borderColor: INK, borderWidth: 1,
+    padding: 8, cornerRadius: 0, titleFont: { weight: '700' }, boxPadding: 3,
   });
-  d.plugins.legend.labels.usePointStyle = true;
-  d.elements.bar.borderRadius = 6;
+  d.plugins.legend.labels.usePointStyle = false;
+  d.plugins.legend.labels.boxWidth = 14;
+  d.plugins.legend.labels.boxHeight = 8;
+  d.elements.bar.borderRadius = 0;
+  d.elements.bar.borderWidth = 1;
+  d.elements.bar.borderColor = INK;
+  d.elements.line.borderWidth = 1.5;
+  d.elements.point.radius = 2.5;
+  d.scale.grid.color = tok('--line-faint') || '#DCE3F3';
+  d.scale.border = { color: INK };
+
+  // Older screens hard-code the previous palette; map those colors onto the theme
+  // so every chart follows theme.css without editing each chart.
+  const MAP = {
+    '#1d4ed8': INK, '#2563eb': INK, '#0b2a6f': INK, '#1e3a8a': INK, '#3b82f6': '#3F5BB5',
+    '#bfdbfe': '#C9D3EE', '#dbeafe': '#E3E9F7', '#93c5fd': tok('--line'), '#60a5fa': tok('--watch'),
+    '#dc2626': tok('--redline'), '#ef4444': tok('--redline'), '#f97316': tok('--redline-2'),
+    '#f59e0b': tok('--highlight'), '#16a34a': INK, '#22c55e': INK, '#94a3b8': tok('--line'),
+  };
+  const remap = v => (typeof v === 'string' && MAP[v.toLowerCase()]) || v;
+  Chart.register({
+    id: 'drawingPalette',
+    beforeUpdate(chart) {
+      for (const ds of chart.data.datasets) {
+        for (const k of ['backgroundColor', 'borderColor', 'pointBackgroundColor']) {
+          if (Array.isArray(ds[k])) ds[k] = ds[k].map(remap); else if (ds[k]) ds[k] = remap(ds[k]);
+        }
+        if (ds.type === 'line' || chart.config.type === 'line') { ds.tension = 0; }
+        if (typeof ds.borderRadius === 'number') ds.borderRadius = 0;
+      }
+    },
+  });
 }
 
 // ── Wire it up ───────────────────────────────────────────────────────────────
@@ -192,12 +226,12 @@ if (window.Chart) {
     b.className = 'nav-search';
     b.type = 'button';
     b.innerHTML = `<svg width="14" height="14" viewBox="0 0 20 20"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
-      <span>Search</span><kbd>Ctrl K</kbd>`;
+      <span>Find a sheet, lot or rack</span><kbd>Ctrl K</kbd>`;
     b.onclick = () => window.openPalette && openPalette();
     brand.after(b);
   }
   const foot = document.querySelector('.sidebar-footer');
-  if (foot) foot.innerHTML = `<span>Pharma WH Optimizer</span><span class="ver">v${APP_VERSION}</span>`;
+  if (foot) foot.innerHTML = `<span>Pharma warehouse optimizer</span><span class="ver">Rev ${APP_VERSION}</span>`;
 
   // Launch splash: leave once the first screen has painted.
   const splash = document.getElementById('splash');
