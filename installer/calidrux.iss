@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6: https://jrsoftware.org/isinfo.php
 
 #define AppName "Calidrux"
-#define AppVersion "0.5.0"
+#define AppVersion "0.6.0"
 #define AppPublisher "Calidrux"
 #define AppURL "https://github.com/calidrux/calidrux"
 #define AppExeName "Calidrux.exe"

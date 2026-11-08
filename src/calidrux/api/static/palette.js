@@ -6,27 +6,27 @@ const PAL = { open: false, items: [], idx: 0, data: null, loadedAt: 0 };
 
 const SHEETS_NO = v => (typeof SHEETS !== 'undefined' && SHEETS[v] ? SHEETS[v].no.replace('-', '') : '');
 const PAL_VIEWS = [
-  ['dashboard', 'Cover sheet', 'Today at a glance', SHEETS_NO('dashboard'), 'home dashboard kpi'],
+  ['dashboard', 'Cover sheet', 'Project data, key plan and general notes', SHEETS_NO('dashboard'), 'home dashboard kpi'],
   ['floor', 'Floor plan', 'Every rack, coloured by expiry', SHEETS_NO('floor'), 'warehouse map racks floor plan'],
   ['receive', 'Receive Stock', 'Log a delivery and put it away', SHEETS_NO('receive'), 'inbound goods receipt putaway'],
   ['expiry', 'Expiry schedule', 'Lots by how soon they expire', SHEETS_NO('expiry'), 'fefo shelf life expiring expired'],
   ['layout', 'Layout', 'Aisles, bays, levels and cold rooms', SHEETS_NO('layout'), 'size configure warehouse'],
   ['lab', 'Optimization Lab', 'What-if sliders: expiry risk, route ROI, slotting trade-offs', SHEETS_NO('lab'), 'simulation sliders what if roi savings forecast monte carlo'],
-  ['abc', 'ABC Analysis', 'Pareto classification by usage value', SHEETS_NO('abc'), 'pareto classify'],
+  ['abc', 'ABC analysis', 'Pareto classification by usage value', SHEETS_NO('abc'), 'pareto classify'],
   ['slotting', 'Slotting', 'OR-Tools slot assignment', SHEETS_NO('slotting'), 'optimize optimise solver'],
   ['picking', 'Pick routes', 'FEFO pick lists and TSP routes', SHEETS_NO('picking'), 'pick route tsp travel'],
   ['inventory', 'Inventory register', 'Products, locations, lots and stock', SHEETS_NO('inventory'), 'products batches stock movements'],
-  ['audit', 'Audit Log', 'Every change, append-only', SHEETS_NO('audit'), 'history gdp trail'],
+  ['audit', 'Audit log', 'Every change, append-only', SHEETS_NO('audit'), 'history gdp trail'],
   ['settings', 'Settings', 'User, dock position, weights', SHEETS_NO('settings'), 'preferences config'],
 ];
 
 const PAL_ACTIONS = [
-  ['Receive a delivery', 'Open the receiving flow', '＋', 'new receipt inbound', () => showView('receive')],
-  ['Show expired lots', 'Expiry board filtered to expired', '!', 'expired quarantine hold', () => { WH.expiryFilter = { bucket: 'expired', q: '', zone: 'all', hold: false }; showView('expiry'); }],
-  ['Show lots expiring in 30 days', 'Expiry board · ≤ 30 days', '◷', 'critical soon', () => { WH.expiryFilter = { bucket: 'critical', q: '', zone: 'all', hold: false }; showView('expiry'); }],
-  ['Show the cold room', 'Floor map coloured by zone', '❄', 'cold chain fridge 2-8', () => { WH.mode = 'zone'; WH.query = ''; showView('floor'); }],
-  ['Run ABC analysis', 'Classify every SKU now', '◔', 'pareto', async () => { showView('abc'); setTimeout(() => window.runABC && runABC(), 350); }],
-  ['Run the slotting solver', 'Generate slot recommendations', '⇄', 'optimize', async () => { showView('slotting'); setTimeout(() => { const b = document.querySelector('[data-run-slotting]'); b && b.click(); }, 450); }],
+  ['Receive a delivery', 'Open W-102 and enter a delivery', 'package-plus', 'new receipt inbound', () => showView('receive')],
+  ['Show expired lots', 'Expiry schedule filtered to expired', 'triangle-alert', 'expired quarantine hold', () => { WH.expiryFilter = { bucket: 'expired', q: '', zone: 'all', hold: false }; showView('expiry'); }],
+  ['Show lots expiring in 30 days', 'Expiry schedule, 30 days or less', 'calendar-clock', 'critical soon', () => { WH.expiryFilter = { bucket: 'critical', q: '', zone: 'all', hold: false }; showView('expiry'); }],
+  ['Show the cold room', 'Floor plan coloured by zone', 'snowflake', 'cold chain fridge 2-8', () => { WH.mode = 'zone'; WH.query = ''; showView('floor'); }],
+  ['Run ABC analysis', 'Classify every SKU now', 'chart-pie', 'pareto', async () => { showView('abc'); setTimeout(() => window.runABC && runABC(), 350); }],
+  ['Run the slotting solver', 'Recommend slot moves', 'arrow-left-right', 'optimize', async () => { showView('slotting'); setTimeout(() => { const b = document.querySelector('[data-run-slotting]'); b && b.click(); }, 450); }],
 ];
 
 async function palLoad() {
@@ -70,20 +70,20 @@ function palBuild(q) {
   take('Actions', PAL_ACTIONS.map(([label, sub, ico, kw, fn]) => ({ label, sub, ico, hay: `${label} ${sub} ${kw}`, run: fn })), q ? 4 : 3);
   if (q && PAL.data) {
     take('Products', PAL.data.products.map(p => ({
-      label: p.name, sub: `${p.sku} · ${p.storage_class === 'cold' ? 'cold chain' : 'ambient'} · show on map`,
-      ico: p.storage_class === 'cold' ? '❄' : '◼', tag: p.sku, hay: `${p.sku} ${p.name}`,
+      label: p.name, sub: `${p.sku}, ${p.storage_class === 'cold' ? 'cold chain' : 'ambient'}`,
+      ico: p.storage_class === 'cold' ? 'snowflake' : 'package', tag: p.sku, hay: `${p.sku} ${p.name}`,
       run: () => { WH.query = p.sku; WH.mode = 'expiry'; showView('floor'); },
     })), 5);
     take('Lots', PAL.data.lots.map(l => ({
-      label: `Lot ${l.lot_number}`, sub: `${l.name} · ${fmt(l.total)} units · ${daysText(l.days_left)}`,
-      ico: '◉', icoColor: BUCKETS[l.bucket].color, tag: l.main.location_code,
+      label: `Lot ${l.lot_number}`, sub: `${l.name}, ${fmt(l.total)} units, ${daysText(l.days_left)}`,
+      ico: 'map-pin', icoColor: BUCKETS[l.bucket].color, tag: l.main.location_code,
       hay: `${l.lot_number} ${l.sku} ${l.name}`,
       run: () => openRack(l.main.aisle, l.main.bay, { highlight: l.main.inventory_id }),
     })), 5);
     take('Racks', PAL.data.racks.map(r => ({
-      label: `Aisle ${pad2(r.aisle)} · Bay ${pad2(r.bay)}`,
-      sub: r.quantity ? `${fmt(r.quantity)} units · ${pct(r.utilization)} full · ${r.skus.slice(0, 3).join(', ')}` : 'Empty',
-      ico: '▥', tag: r.zone === 'cold' ? '❄ cold' : '',
+      label: `Rack A${pad2(r.aisle)}-B${pad2(r.bay)}`,
+      sub: r.quantity ? `${fmt(r.quantity)} units, ${pct(r.utilization)} full, ${r.skus.slice(0, 3).join(', ')}` : 'Empty',
+      ico: 'warehouse', tag: r.zone === 'cold' ? 'cold' : '',
       hay: `A${pad2(r.aisle)}-B${pad2(r.bay)} a${r.aisle} b${r.bay} aisle ${r.aisle} bay ${r.bay} rack ${r.levels.map(l => l.code).join(' ')}`,
       run: () => openRack(r.aisle, r.bay),
     })), 4);
@@ -101,7 +101,7 @@ function palRender() {
     if (x.group) return `<div class="cmdk-group">${x.group}</div>`;
     k++;
     return `<div class="cmdk-item" data-k="${k}">
-      <span class="ci-ico" ${x.icoColor ? `style="color:${x.icoColor}"` : ''}>${x.ico}</span>
+      <span class="ci-ico" ${x.icoColor ? `style="color:${x.icoColor}"` : ''}>${LUCIDE[x.ico] ? icon(x.ico) : esc(x.ico)}</span>
       <span class="ci-main"><b>${esc(x.label)}</b><small>${esc(x.sub || '')}</small></span>
       ${x.tag ? `<span class="ci-tag">${esc(x.tag)}</span>` : ''}
     </div>`;
@@ -128,12 +128,12 @@ async function openPalette() {
   wrap.className = 'cmdk-wrap';
   wrap.innerHTML = `<div class="cmdk" role="dialog" aria-label="Search">
     <div class="cmdk-in">
-      <svg width="18" height="18" viewBox="0 0 20 20"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
-      <input id="cmdk-q" placeholder="Search screens, products, lots, racks…" autocomplete="off" spellcheck="false">
+      ${icon('search')}
+      <input id="cmdk-q" placeholder="Find a sheet, product, lot or rack" autocomplete="off" spellcheck="false">
       <kbd>Esc</kbd>
     </div>
     <div class="cmdk-list" id="cmdk-list"></div>
-    <div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span><kbd>Esc</kbd> close</span>
+    <div class="cmdk-foot"><span><kbd>${icon('arrow-up')}</kbd><kbd>${icon('arrow-down')}</kbd> move</span><span><kbd>${icon('corner-down-left')}</kbd> open</span><span><kbd>Esc</kbd> close</span>
       <span style="margin-left:auto">Try “insulin”, “A03”, or a lot number</span></div>
   </div>`;
   document.body.appendChild(wrap);

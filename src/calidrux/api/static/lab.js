@@ -98,10 +98,10 @@ function renderImpact() {
       card('slot', 'Less picker travel after re-slotting', 'with the current weights') +
       card('waste', 'Projected expiry write-off', 'next 180 days at current demand');
   }
-  if (i.labor != null) { setNum('iv-labor', i.labor, usd); document.getElementById('is-labor').textContent = `${fmt(i.hours)} hours / year · ${i.fte.toFixed(1)} FTE`; }
+  if (i.labor != null) { setNum('iv-labor', i.labor, usd); document.getElementById('is-labor').textContent = `${fmt(i.hours)} hours / year, ${i.fte.toFixed(1)} FTE`; }
   if (i.routes != null) setNum('iv-routes', i.routes, v => v.toFixed(1) + '%');
-  if (i.slot != null) { setNum('iv-slot', i.slot, v => v.toFixed(1) + '%'); document.getElementById('is-slot').textContent = `${i.slotMoves} moves needed · current weights`; }
-  if (i.waste != null) { setNum('iv-waste', i.waste, usd); document.getElementById('is-waste').textContent = `next ${LAB.expiry.horizon} days · demand ×${LAB.expiry.mult.toFixed(2)}`; }
+  if (i.slot != null) { setNum('iv-slot', i.slot, v => v.toFixed(1) + '%'); document.getElementById('is-slot').textContent = `${i.slotMoves} moves needed, current weights`; }
+  if (i.waste != null) { setNum('iv-waste', i.waste, usd); document.getElementById('is-waste').textContent = `next ${LAB.expiry.horizon} days, demand ×${LAB.expiry.mult.toFixed(2)}`; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -115,7 +115,7 @@ async function viewLab() {
   vc.innerHTML = `
     <div class="page-header">
       <div><h1 class="page-title">Optimization lab</h1>
-        <div class="page-sub">Move the sliders and every number recomputes from your live warehouse: expiry risk, route savings, slotting trade-offs and ABC sensitivity. What-if only — nothing in the warehouse changes.</div></div>
+        <div class="page-sub">Move the sliders and every number recomputes from your live warehouse: expiry risk, route savings, slotting trade-offs and ABC sensitivity. What-if only: nothing in the warehouse changes.</div></div>
       <span class="lab-badge"><i></i>What-if mode</span>
     </div>
     <div class="lab-impact" id="lab-impact"></div>
@@ -245,7 +245,7 @@ function panelExpiry() {
       ${f.lots.slice(0, 10).map(l => `<tr class="wh-click" onclick="openRack(${l.main.aisle},${l.main.bay},{highlight:${l.main.inventory_id}})">
         <td><b>${esc(l.sku)}</b> ${esc(l.name)}</td><td>${esc(l.lot_number)}</td><td><span class="wh-loc">${esc(l.main.location_code)}</span></td>
         <td style="color:${BUCKETS[l.bucket].color};font-weight:600">${daysText(l.days_left)}</td>
-        <td><div class="lab-sold"><i style="width:${(l.soldShare * 100).toFixed(0)}%"></i></div><small>${(l.soldShare * 100).toFixed(0)}% · ${fmt(l.consumed)} of ${fmt(l.qty)}</small></td>
+        <td><div class="lab-sold"><i style="width:${(l.soldShare * 100).toFixed(0)}%"></i></div><small>${(l.soldShare * 100).toFixed(0)}%, ${fmt(l.consumed)} of ${fmt(l.qty)}</small></td>
         <td><b style="color:#dc2626">${usd(l.wasteValue)}</b><br><small>${fmt(l.waste)} u</small></td>
         <td>${l.days_left < 0 ? 'Quarantine & destroy' : l.days_left <= 30 ? 'Discount or redistribute now' : l.days_left <= 90 ? 'Move to golden zone, promote' : 'Cut the next order'}</td></tr>`).join('')}
       </tbody></table></div>` : '<div class="empty">No write-off expected in this horizon at this demand.</div>';
@@ -288,7 +288,7 @@ function panelRoutes() {
   document.getElementById('lab-panel').innerHTML = `
     <div class="lab-grid">
       <div class="card lab-ctl">
-        <div class="lab-ctl-title">Simulation <button class="lab-run" id="rt-run" title="New random orders">↻ Re-roll</button></div>
+        <div class="lab-ctl-title">Simulation <button class="lab-run" id="rt-run" title="Draw a new set of random orders">${icon('dices')}New orders</button></div>
         ${labSlider('ord', 'Orders to simulate', { min: 20, max: 400, step: 10, value: r.orders, fmt: v => v })}
         ${labSlider('lin', 'Lines per order', { min: 2, max: 25, step: 1, value: r.lines, fmt: v => v + ' stops' })}
         <div class="lab-ctl-title" style="margin-top:18px">Your operation</div>
@@ -340,7 +340,7 @@ function drawRoutes() {
   const res = LAB.routes.result; if (!res || !document.getElementById('rt-c1')) return;
   const s = res.summary;
   setNum('rt-mean', s.mean_savings_pct, v => v.toFixed(1) + '%');
-  document.getElementById('rt-band').textContent = `p10 ${s.p10_savings_pct}% · median ${s.median_savings_pct}% · p90 ${s.p90_savings_pct}%`;
+  document.getElementById('rt-band').textContent = `p10 ${s.p10_savings_pct}%, median ${s.median_savings_pct}%, p90 ${s.p90_savings_pct}%`;
   setNum('rt-saved', s.avg_saved_m, v => v.toFixed(1) + ' m');
   document.getElementById('rt-dist').textContent = `${s.avg_optimized_m} m vs ${s.avg_baseline_m} m baseline`;
   setNum('rt-n', s.orders, v => fmt(v));
@@ -390,7 +390,7 @@ function panelSlotting() {
         ${labSlider('ww', 'Weight × shelf level', { min: 0, max: 3, step: 0.1, value: w.weight_level, fmt: f2, hint: 'heavy items low' })}
         ${labSlider('wr', 'Relocation cost', { min: 0, max: 5, step: 0.1, value: w.relocation, fmt: f2, hint: 'penalty per move' })}
         <div class="btn-group" style="margin-top:6px">
-          <button class="btn btn-ghost btn-sm" id="sl-sweep">⌁ Map the trade-off curve</button>
+          <button class="btn btn-ghost btn-sm" id="sl-sweep">${icon('spline')}Map the trade-off curve</button>
           <button class="btn btn-primary btn-sm" id="sl-apply">Use these weights</button>
         </div>
         <div class="lab-explain">Every change re-solves the assignment model with OR-Tools (SCIP) in a rolled-back transaction, then measures expected picker travel: <b>Σ picks × 2 × distance to dock</b>.</div>
@@ -403,7 +403,7 @@ function panelSlotting() {
         </div>
         <div class="lab-charts">
           <div class="card"><div class="card-title">Average distance to the dock by ABC class</div><div class="lab-chart"><canvas id="sl-c1"></canvas></div></div>
-          <div class="card"><div class="card-title">Trade-off: moves vs travel saved <span class="wh-muted" id="sl-sweep-note">run the sweep →</span></div><div class="lab-chart"><canvas id="sl-c2"></canvas></div></div>
+          <div class="card"><div class="card-title">Trade-off: moves vs travel saved <span class="wh-muted" id="sl-sweep-note">run the sweep to plot it</span></div><div class="lab-chart"><canvas id="sl-c2"></canvas></div></div>
         </div>
         <div class="card"><div class="card-title">Proposed moves</div><div id="sl-moves-list" class="lab-moves"></div></div>
       </div>
@@ -435,7 +435,7 @@ function drawSlot() {
     options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'metres to dock' } } } },
   });
   document.getElementById('sl-moves-list').innerHTML = r.move_list.length ? r.move_list.slice(0, 16).map((m, i) =>
-    `<span class="lab-move" style="--i:${i}"><b>${esc(m.sku)}</b> <span class="wh-loc">${esc(m.from || '—')}</span> → <span class="wh-loc">${esc(m.to)}</span></span>`).join('')
+    `<span class="lab-move" style="--i:${i}"><b>${esc(m.sku)}</b> <span class="wh-loc">${esc(m.from || '—')}</span>${icon('arrow-right')}<span class="wh-loc">${esc(m.to)}</span></span>`).join('')
     + (r.move_list.length > 16 ? `<span class="wh-muted">+${r.moves - 16} more</span>` : '') : '<div class="wh-muted">Current slotting is already optimal for these weights.</div>';
   if (LAB.slot.sweep) drawSweep();
 }
@@ -448,7 +448,7 @@ async function runSweep() {
       values: [0, 0.1, 0.25, 0.5, 1, 1.5, 2.5, 4, 6] });
     drawSweep();
   } catch (e) { toast(e.message, 'error'); }
-  btn.disabled = false; btn.textContent = '⌁ Map the trade-off curve';
+  btn.disabled = false; btn.innerHTML = `${icon('spline')}Map the trade-off curve`;
 }
 
 function drawSweep() {
@@ -521,7 +521,7 @@ function panelAbc() {
     });
     const changed = rows.filter(r => r.cls !== base[r.sku]);
     document.getElementById('abc-chg').innerHTML = changed.length
-      ? `<div class="lab-ctl-title" style="margin-top:14px">Changed vs 80/95 default</div>${changed.map(r => `<div class="lab-chg"><b>${esc(r.sku)}</b> ${base[r.sku]} → <b class="c-${r.cls}">${r.cls}</b></div>`).join('')}`
+      ? `<div class="lab-ctl-title" style="margin-top:14px">Changed vs 80/95 default</div>${changed.map(r => `<div class="lab-chg"><b>${esc(r.sku)}</b> ${base[r.sku]} ${icon('arrow-right')} <b class="c-${r.cls}">${r.cls}</b></div>`).join('')}`
       : '<div class="wh-muted" style="margin-top:12px">Same classes as the 80/95 default.</div>';
   };
   bindSlider('ta', v => v + '%', v => { s.a = v; redraw(); });

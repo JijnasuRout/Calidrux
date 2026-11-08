@@ -36,20 +36,20 @@ async function enhanceForm(form) {
   for (const input of inputs) {
     if (input.name === 'product_id') {
       productSel = swap(input, d.products.map(p =>
-        `<option value="${p.id}">${esc(p.sku)} · ${esc(p.name)}${p.storage_class === 'cold' ? ' ❄' : ''}</option>`).join(''), 'Choose a product…');
+        `<option value="${p.id}">${esc(p.sku)}, ${esc(p.name)}${p.storage_class === 'cold' ? ' (cold)' : ''}</option>`).join(''), 'Choose a product…');
     } else if (input.name === 'batch_id') {
       const sel = swap(input, '', 'Choose a lot…');
       const fill = () => {
         const pid = productSel ? +productSel.value : 0;
         const list = d.batches.filter(b => !pid || b.product_id === pid);
         sel.innerHTML = `<option value="">${pid ? 'Choose a lot…' : 'Pick a product first…'}</option>` + list.map(b =>
-          `<option value="${b.id}">${esc(b.lot_number)} · ${esc(d.pmap[b.product_id]?.sku || '')} · exp ${b.expiry_date}${b.status !== 'active' ? ' · ' + b.status : ''}</option>`).join('');
+          `<option value="${b.id}">${esc(b.lot_number)}, ${esc(d.pmap[b.product_id]?.sku || '')}, exp ${b.expiry_date}${b.status !== 'active' ? ', ' + b.status : ''}</option>`).join('');
       };
       fill();
       if (productSel) productSel.addEventListener('change', fill);
     } else {
       swap(input, d.locations.map(l =>
-        `<option value="${l.id}">${esc(l.code)}${l.zone_type === 'cold' ? ' ❄' : ''}</option>`).join(''), 'Choose a slot…');
+        `<option value="${l.id}">${esc(l.code)}${l.zone_type === 'cold' ? ' (cold)' : ''}</option>`).join(''), 'Choose a slot…');
     }
   }
   form.addEventListener('submit', () => { _refCache = null; });
@@ -72,17 +72,17 @@ _renderPickPanel = async function (tab) {
   if (tab !== 'lists') return _renderPickMetrics(el);
   const [picks, d] = await Promise.all([api('GET', '/api/picks'), refData()]);
   const stocked = new Set((await whApi('GET', '/api/warehouse/expiry')).items.filter(i => i.status === 'active' && i.days_left >= 0).map(i => i.product_id));
-  const opts = d.products.filter(p => stocked.has(p.id)).map(p => `<option value="${p.id}">${esc(p.sku)} · ${esc(p.name)}</option>`).join('');
+  const opts = d.products.filter(p => stocked.has(p.id)).map(p => `<option value="${p.id}">${esc(p.sku)}, ${esc(p.name)}</option>`).join('');
   const ref = `PL-${new Date().toISOString().slice(5, 10).replace('-', '')}-${String(picks.length + 1).padStart(3, '0')}`;
   el.innerHTML = `
     <div class="card">
-      <div class="card-title">New pick list <span class="wh-muted">FEFO picks the oldest lot · OR-Tools orders the stops</span></div>
+      <div class="card-title">New pick list <span class="wh-muted">FEFO picks the oldest lot and OR-Tools orders the stops</span></div>
       <form id="pk-form" onsubmit="createPickList2(event)">
         <div class="form-grid" style="margin-bottom:12px"><div class="form-group"><label>Reference</label><input name="reference" value="${ref}" required></div></div>
         <div class="pk-lines" id="pk-lines"></div>
         <div class="btn-group" style="margin-top:12px">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="addPickLine()">＋ Add line</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="randomPickLines()">⚄ Fill 6 random lines</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addPickLine()">${icon('plus')}Add line</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="randomPickLines()">${icon('dices')}Fill 6 random lines</button>
           <button class="btn btn-primary" type="submit" style="margin-left:auto">Create & route</button>
         </div>
       </form>
@@ -98,7 +98,7 @@ _renderPickPanel = async function (tab) {
           `<button class="btn btn-ghost btn-sm" onclick="showPickLines(${p.id})">View route</button>
            ${p.status === 'open' ? `<button class="btn btn-primary btn-sm" onclick="completePick(${p.id})">Complete</button>` : ''}`,
         ];
-      }), 'No pick lists yet — create one above.')}
+      }), 'No pick lists yet. Add lines above and select Create & route.')}
     </div>
     <div id="pick-lines-detail"></div>`;
   window._pkOpts = opts;
@@ -134,7 +134,7 @@ async function createPickList2(e) {
   try {
     const pl = await api('POST', '/api/picks', { reference: f.reference.value, lines });
     const save = pl.baseline_distance_m ? Math.round((1 - pl.optimized_distance_m / pl.baseline_distance_m) * 100) : 0;
-    toast(`${pl.reference}: ${pl.lines} stops, ${pl.optimized_distance_m} m${save > 0 ? ` — ${save}% shorter than aisle-by-aisle` : ''}`);
+    toast(`${pl.reference}: ${pl.lines} stops, ${pl.optimized_distance_m} m${save > 0 ? `, ${save}% shorter than aisle-by-aisle` : ''}`);
     await _renderPickPanel('lists');
     showPickLines(pl.id);
   } catch (err) { toast(err.message, 'error'); btn.disabled = false; btn.textContent = 'Create & route'; }
@@ -143,17 +143,17 @@ async function createPickList2(e) {
 async function _renderPickMetrics(el) {
   const m = await api('GET', '/api/picking/metrics');
   el.innerHTML = `
-    ${m.completed_picks ? '' : '<div class="wh-note" style="margin-bottom:14px">No completed pick lists yet — complete one from the Pick Lists tab to start tracking.</div>'}
+    ${m.completed_picks ? '' : '<div class="wh-note" style="margin-bottom:14px">No completed pick lists yet. Complete one on the Pick lists tab to start tracking distance.</div>'}
     <div class="metric-row">
-      ${metricItem('Completed Picks', m.completed_picks)}
-      ${metricItem('Avg Picks / Hour', m.avg_picks_per_hour)}
-      ${metricItem('Avg Optimised Dist', m.avg_optimized_distance_m + ' m')}
-      ${metricItem('Avg Baseline Dist', m.avg_baseline_distance_m + ' m')}
-      ${metricItem('Distance Savings', m.distance_savings_pct + '%')}
-      ${metricItem('FEFO Compliance', m.fefo_compliance_pct + '%')}
-      ${metricItem('Error Rate', m.error_rate_pct + '%')}
+      ${metricItem('Completed picks', m.completed_picks)}
+      ${metricItem('Avg picks / hour', m.avg_picks_per_hour)}
+      ${metricItem('Avg optimized distance', m.avg_optimized_distance_m + ' m')}
+      ${metricItem('Avg baseline distance', m.avg_baseline_distance_m + ' m')}
+      ${metricItem('Distance savings', m.distance_savings_pct + '%')}
+      ${metricItem('FEFO compliance', m.fefo_compliance_pct + '%')}
+      ${metricItem('Error rate', m.error_rate_pct + '%')}
     </div>
-    <div class="card"><div class="card-title">Route distance — optimized vs aisle-by-aisle</div>
+    <div class="card"><div class="card-title">Route distance: optimized vs aisle-by-aisle</div>
       <div class="chart-container" style="height:240px"><canvas id="metrics-chart"></canvas></div></div>`;
   if (_metricsChart) { _metricsChart.destroy(); _metricsChart = null; }
   _metricsChart = new Chart(document.getElementById('metrics-chart'), {
@@ -174,14 +174,14 @@ showPickLines = async function (id, scroll = true) {
   detail.innerHTML = `
     <div class="card">
       <div class="card-title">Route for ${esc(pl.reference)} ${badge(pl.status, STATUS_BADGE)}
-        <span class="pk-save"><b>${save}%</b> shorter · ${pl.optimized_distance_m} m vs ${pl.baseline_distance_m} m</span></div>
+        <span class="pk-save"><b>${save}%</b> shorter, ${pl.optimized_distance_m} m vs ${pl.baseline_distance_m} m</span></div>
       <div class="pk-route-wrap" id="pk-wrap"><div id="pk-floor"></div><svg class="pk-svg" id="pk-svg"></svg></div>
       <div class="pk-legend"><span><i></i>Optimized route (OR-Tools)</span>
         <label class="wh-toggle"><input type="checkbox" id="pk-base" checked> <i class="b"></i>Aisle-by-aisle baseline</label>
-        <button class="btn btn-ghost btn-sm" onclick="showPickLines(${id})">↻ Replay</button></div>
+        <button class="btn btn-ghost btn-sm" onclick="showPickLines(${id})">${icon('rotate-cw')}Replay route</button></div>
       <div style="margin-top:14px">${tbl(['Stop', 'Product', 'Lot', 'Expiry', 'Slot', 'Units', 'Picked'], lines.map(l => [
         `<b>${l.sequence}</b>`, `<strong>${esc(l.sku)}</strong> ${esc(l.product_name || '')}`, esc(l.lot_number), l.expiry_date,
-        `<span class="wh-loc">${esc(l.location_code)}</span>`, fmt(l.quantity), l.picked ? '✓' : '—']))}</div>
+        `<span class="wh-loc">${esc(l.location_code)}</span>`, fmt(l.quantity), l.picked ? icon('check') : '—']))}</div>
     </div>`;
   const host = $('#pk-floor');
   const zoom = Math.max(0.9, Math.min(2, (host.parentElement.clientWidth - 80) / ((floor.max_bays || 8) * 33)));
@@ -246,8 +246,8 @@ viewSlotting = async function () {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
       <div><h1 class="page-title">Slotting</h1>
-        <div class="page-sub">OR-Tools assigns each product to the slot with the lowest combined cost — travel × ABC class, pick frequency, weight × level and relocation — while honouring cold-chain, quarantine and weight limits.</div></div>
-      <button class="btn btn-primary" data-run-slotting onclick="runSlotting(this)">▶ Run solver</button>
+        <div class="page-sub">OR-Tools assigns each product to the slot with the lowest combined cost — travel × ABC class, pick frequency, weight × level and relocation, while honouring cold-chain, quarantine and weight limits.</div></div>
+      <button class="btn btn-primary" data-run-slotting onclick="runSlotting(this)">${icon('play')}Run solver</button>
     </div>
     <div id="slotting-msg"></div>
     <div class="kpi-grid">${kpiCard('Pending', by('pending'))}${kpiCard('Accepted', by('accepted'))}${kpiCard('Rejected', by('rejected'))}</div>
@@ -255,11 +255,11 @@ viewSlotting = async function () {
       <div class="card-title">Recommendations ${pending.length ? `<button class="btn btn-ghost btn-sm" onclick="acceptAllRecs()">Accept all ${pending.length}</button>` : ''}</div>
       ${tbl(['SKU', 'Move', 'Cost score', 'Why', 'Status', ''], recs.map(r => [
         `<strong>${esc(r.sku)}</strong>`,
-        `<span class="sl-move"><span class="wh-loc">${esc(r.from_code)}</span><span class="arr">→</span><span class="wh-loc">${esc(r.to_code)}</span></span>`,
+        `<span class="sl-move"><span class="wh-loc">${esc(r.from_code)}</span><span class="arr">${icon('arrow-right')}</span><span class="wh-loc">${esc(r.to_code)}</span></span>`,
         r.cost_delta.toFixed(1), `<span class="wh-muted">${esc(r.reason || '')}</span>`, badge(r.status, STATUS_BADGE),
         r.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="decideRec(${r.id}, true, this)">Accept</button>
           <button class="btn btn-danger btn-sm" onclick="decideRec(${r.id}, false, this)">Reject</button>` : '',
-      ]), 'No recommendations yet — run the solver to generate them.')}
+      ]), 'No recommendations yet. Select Run solver to generate them.')}
     </div>`;
 };
 
@@ -273,7 +273,7 @@ runSlotting = async function (btn) {
     viewSlotting();
   } catch (err) {
     toast(err.message, 'error'); $('#slotting-msg').innerHTML = '';
-    if (btn) { btn.disabled = false; btn.textContent = '▶ Run solver'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = `${icon('play')}Run solver`; }
   }
 };
 
@@ -282,7 +282,7 @@ async function decideRec(id, accept, btn) {
   try {
     await api('POST', `/api/slotting/${id}/${accept ? 'accept' : 'reject'}`);
     tr.classList.add('row-out');
-    toast(accept ? 'Accepted — stock moved to the new slot' : 'Recommendation rejected', accept ? 'success' : 'info');
+    toast(accept ? 'Stock moved to the new slot' : 'Recommendation rejected', accept ? 'success' : 'info');
     setTimeout(viewSlotting, 420);
   } catch (err) { toast(err.message, 'error'); }
 }
@@ -291,7 +291,7 @@ async function acceptAllRecs() {
   const recs = (await api('GET', '/api/slotting/recommendations?status=pending'));
   let ok = 0, fail = 0;
   for (const r of recs) { try { await api('POST', `/api/slotting/${r.id}/accept`); ok++; } catch { fail++; } }
-  toast(`Accepted ${ok}${fail ? ` · ${fail} could not be applied` : ''}`, fail ? 'info' : 'success');
+  toast(`Accepted ${ok}${fail ? `, ${fail} could not be applied` : ''}`, fail ? 'info' : 'success');
   viewSlotting();
 }
 
@@ -302,12 +302,12 @@ viewAudit = async function () {
   const types = [...new Set(logs.map(l => l.entity_type))].sort();
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
-      <div><h1 class="page-title">Audit log</h1><div class="page-sub">Append-only record of every change — who, what and when.</div></div>
-      <button class="btn btn-ghost" onclick="showView('audit')">↻ Refresh</button>
+      <div><h1 class="page-title">Audit log</h1><div class="page-sub">Every change, with who made it and when. Entries can't be edited or deleted.</div></div>
+      <button class="btn btn-ghost" onclick="showView('audit')">${icon('rotate-cw')}Refresh</button>
     </div>
     <div class="card">
       <div class="au-tools">
-        <div class="wh-search"><svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
+        <div class="wh-search">${icon('search')}
           <input id="au-q" placeholder="Search notes, users, actions…"><span id="au-n"></span></div>
         <select id="au-type"><option value="">All entities</option>${types.map(t => `<option>${esc(t)}</option>`).join('')}</select>
       </div>

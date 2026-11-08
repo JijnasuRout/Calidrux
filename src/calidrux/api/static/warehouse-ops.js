@@ -28,7 +28,7 @@ async function viewReceive() {
           <div class="form-group"><label>Product</label>
             <select name="product_id" required>
               <option value="">Select a product…</option>
-              ${products.map(p => `<option value="${p.id}">${esc(p.sku)} · ${esc(p.name)}${p.storage_class === 'cold' ? ' ❄' : ''}</option>`).join('')}
+              ${products.map(p => `<option value="${p.id}">${esc(p.sku)}, ${esc(p.name)}${p.storage_class === 'cold' ? ' (cold)' : ''}</option>`).join('')}
             </select></div>
           <div id="rcv-prod"></div>
           <div class="wh-form2">
@@ -41,7 +41,7 @@ async function viewReceive() {
           <div id="rcv-note"></div>
         </form>
         <div class="wh-step"><span>2</span>Where it goes</div>
-        <div id="rcv-sugs" class="wh-sugs"><div class="wh-muted wh-pad">Pick a product and quantity — the best slots appear here.</div></div>
+        <div id="rcv-sugs" class="wh-sugs"><div class="wh-muted wh-pad">Choose a product and enter a quantity to see the slots that can take it.</div></div>
         <button id="rcv-go" class="btn btn-primary wh-go" disabled onclick="confirmReceive()">Put away</button>
       </div>
       <div class="card wh-recv-map">
@@ -85,8 +85,8 @@ async function onProductChange() {
   const v = p.pick_frequency_30d / maxF;
   const speed = v >= 0.5 ? 'Fast mover' : v >= 0.15 ? 'Medium mover' : 'Slow mover';
   $('#rcv-prod').innerHTML = `<div class="wh-prodinfo">
-      ${p.storage_class === 'cold' ? '<span class="wh-chip cold">❄ Cold chain · must go to the cold room</span>' : '<span class="wh-chip ambient">Ambient storage</span>'}
-      <span class="wh-chip">${speed} · ${fmt(p.pick_frequency_30d)} picks / 30 d</span>
+      ${p.storage_class === 'cold' ? `<span class="wh-chip cold">${icon('snowflake')}Cold chain: goes to the cold room</span>` : '<span class="wh-chip ambient">Ambient storage</span>'}
+      <span class="wh-chip">${speed}, ${fmt(p.pick_frequency_30d)} picks / 30 d</span>
       <span class="wh-chip">${p.weight_kg} kg / unit</span></div>`;
   const batches = await whApi('GET', `/api/batches?product_id=${p.id}`);
   batches.forEach(b => { WH.receive.lots[b.lot_number] = b; });
@@ -101,10 +101,10 @@ function onLotChange() {
   const note = $('#rcv-note');
   if (b) {
     f.expiry.value = b.expiry_date; f.expiry.readOnly = true;
-    note.innerHTML = `<div class="wh-note">This lot is already on file — expiry is locked to <b>${fmtDate(b.expiry_date)}</b> and new units will be consolidated with it where possible.${b.status === 'quarantine' ? ' <b>This lot is on hold and cannot be received.</b>' : ''}</div>`;
+    note.innerHTML = `<div class="wh-note">This lot is already on file. Its expiry is fixed at <b>${fmtDate(b.expiry_date)}</b> and new units will be consolidated with it where possible.${b.status === 'quarantine' ? ' <b>This lot is on hold and cannot be received.</b>' : ''}</div>`;
   } else {
     if (f.expiry.readOnly) { f.expiry.readOnly = false; f.expiry.value = ''; }
-    note.innerHTML = f.lot.value.trim() ? '<div class="wh-note new">New lot — it will be created when you put it away.</div>' : '';
+    note.innerHTML = f.lot.value.trim() ? '<div class="wh-note new">New lot. It is created when you put it away.</div>' : '';
   }
   updateGoButton();
 }
@@ -145,7 +145,7 @@ function renderSuggestions() {
     return `<button type="button" class="wh-sug ${cur && cur.location_id === s.location_id ? 'on' : ''}" data-i="${i}" style="--i:${i}">
       <div class="wh-sug-top"><span class="wh-sug-code">${esc(s.code)}</span>${i === 0 ? '<span class="wh-sug-best">Best match</span>' : ''}
         <span class="wh-sug-dist">${s.distance_m} m</span></div>
-      <div class="wh-sug-meta">Aisle ${s.aisle} · Bay ${s.bay} · Level ${s.level} · ${fmt(s.free)} free</div>
+      <div class="wh-sug-meta">Aisle ${s.aisle}, Bay ${s.bay}, Level ${s.level}, ${fmt(s.free)} free</div>
       <div class="wh-sug-bar"><i style="width:${before}%"></i><b style="left:${before}%;width:${Math.min(add, 100 - before)}%"></b></div>
       <div class="wh-sug-tags">${s.reasons.map(t => `<span>${esc(t)}</span>`).join('')}</div>
     </button>`;
@@ -167,7 +167,7 @@ function updateGoButton() {
   btn.disabled = !ok;
   btn.innerHTML = s ? `Put away ${fmt(+f.qty.value)} units in <b>${esc(s.code)}</b>` : 'Put away';
   const dest = $('#rcv-dest');
-  if (dest) dest.textContent = s ? `→ ${s.code} · ${s.distance_m} m` : '';
+  if (dest) dest.innerHTML = s ? `${icon('arrow-right')}${s.code}, ${s.distance_m} m from the dock` : '';
 }
 
 function drawRecvMap() {
@@ -239,8 +239,8 @@ async function confirmReceive() {
   WH.receive.suggestions = []; WH.receive.suggestion = null;
   $('#rcv-sugs').innerHTML = `
     <div class="wh-success">
-      <div class="wh-success-icon">✓</div>
-      <div><b>${fmt(body.quantity)} units of ${esc(p.name)}</b><div>Lot ${esc(body.lot_number)} stored in <b>${esc(res.code)}</b>${res.batch_created ? ' · new lot created' : ''}</div></div>
+      <div class="wh-success-icon">${icon('check')}</div>
+      <div><b>${fmt(body.quantity)} units of ${esc(p.name)}</b><div>Lot ${esc(body.lot_number)} stored in <b>${esc(res.code)}</b>${res.batch_created ? '. New lot created.' : ''}</div></div>
       <div class="btn-group">
         <button class="btn btn-ghost btn-sm" onclick="openRack(${res.aisle}, ${res.bay}, { batch: ${res.batch_id}, location: ${res.location_id} })">Open rack</button>
         <button class="btn btn-primary btn-sm" onclick="resetReceive()">Receive another</button>
@@ -308,10 +308,10 @@ async function viewExpiry() {
     </div>
     <div class="card">
       <div class="wh-toolbar">
-        <div class="wh-search"><svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
+        <div class="wh-search">${icon('search')}
           <input id="exp-q" placeholder="Filter by product, SKU, lot or slot…" value="${esc(WH.expiryFilter.q)}"></div>
         <div class="wh-seg" id="exp-zone">${['all', 'ambient', 'cold'].map(z =>
-          `<button data-z="${z}" class="${WH.expiryFilter.zone === z ? 'on' : ''}">${{ all: 'All zones', ambient: 'Ambient', cold: '❄ Cold' }[z]}</button>`).join('')}</div>
+          `<button data-z="${z}" class="${WH.expiryFilter.zone === z ? 'on' : ''}">${{ all: 'All zones', ambient: 'Ambient', cold: `${icon('snowflake')}Cold` }[z]}</button>`).join('')}</div>
         <label class="wh-toggle"><input type="checkbox" id="exp-hold" ${WH.expiryFilter.hold ? 'checked' : ''}> On hold only</label>
         <button class="btn btn-ghost btn-sm" id="exp-clear">Clear filters</button>
       </div>
@@ -352,7 +352,7 @@ function renderExpiry(data, animate) {
     return `<button class="wh-bucket ${focus === b.key ? 'on' : ''} ${focus && focus !== b.key ? 'off' : ''}" data-k="${b.key}" style="--c:${m.color};--s:${m.soft}">
       <span class="wh-bucket-label"><i></i>${m.label}</span>
       <span class="wh-bucket-n" data-count="${rows.length}">${animate ? 0 : rows.length}</span>
-      <span class="wh-bucket-sub">${fmt(units)} units · ${money(value)}${b.key === 'expired' || b.key === 'critical' ? ' at risk' : ''}</span>
+      <span class="wh-bucket-sub">${fmt(units)} units, ${money(value)}${b.key === 'expired' || b.key === 'critical' ? ' at risk' : ''}</span>
     </button>`;
   }).join('');
   if (animate) $$('#exp-sum [data-count]').forEach(el => countUp(el, +el.dataset.count));
@@ -371,7 +371,7 @@ function renderExpiry(data, animate) {
     return `<div class="wh-col ${focus && focus !== k ? 'off' : ''} ${focus === k ? 'on' : ''}" style="--c:${m.color};--s:${m.soft}">
       <div class="wh-col-head"><i></i>${m.label}<span>${rows.length}</span></div>
       <div class="wh-col-body">${shown.map((i, n) => xcard(i, n, animate)).join('') || '<div class="wh-col-empty">Nothing here</div>'}
-        ${rows.length > shown.length ? `<div class="wh-col-more">+ ${rows.length - shown.length} more — refine the filter</div>` : ''}</div>
+        ${rows.length > shown.length ? `<div class="wh-col-more">+ ${rows.length - shown.length} more. Narrow the filter to see them.</div>` : ''}</div>
     </div>`;
   }).join('');
   $('#exp-board').onclick = async e => {
@@ -389,12 +389,12 @@ function xcard(i, n, animate) {
   const hold = i.status === 'quarantine';
   return `<div class="wh-xcard ${hold ? 'hold' : ''} ${animate ? 'anim' : ''}" style="--i:${Math.min(n, 20)}"
       data-a="${i.aisle}" data-b="${i.bay}" data-inv="${i.inventory_id}" tabindex="0">
-    <div class="wh-xcard-top"><b>${esc(i.name)}</b>${i.zone === 'cold' ? '<span class="wh-snowflake" title="Cold room">❄</span>' : ''}</div>
-    <div class="wh-xcard-sub">${esc(i.sku)} · Lot ${esc(i.lot_number)} ${hold ? holdChip : ''}</div>
+    <div class="wh-xcard-top"><b>${esc(i.name)}</b>${i.zone === 'cold' ? `<span class="wh-snowflake" title="Cold room">${icon('snowflake')}</span>` : ''}</div>
+    <div class="wh-xcard-sub">${esc(i.sku)}, Lot ${esc(i.lot_number)} ${hold ? holdChip : ''}</div>
     <div class="wh-xcard-bar"><i style="width:${life * 100}%;background:${m.color}"></i></div>
     <div class="wh-xcard-meta"><span style="color:${m.color};font-weight:600">${daysText(i.days_left)}</span><span>${fmtDate(i.expiry_date)}</span></div>
     <div class="wh-xcard-foot"><span class="wh-loc">${esc(i.location_code)}</span><span title="${money(i.value)}">${fmt(i.quantity)} units</span></div>
-    ${i.bucket === 'expired' && !hold ? `<button class="btn btn-danger btn-sm wh-xcard-act" data-hold="${i.batch_id}">⏸ Put lot on hold</button>` : ''}
+    ${i.bucket === 'expired' && !hold ? `<button class="btn btn-danger btn-sm wh-xcard-act" data-hold="${i.batch_id}">${icon('circle-pause')}Put lot on hold</button>` : ''}
   </div>`;
 }
 
@@ -461,10 +461,10 @@ function renderTimeline(items, animate) {
   svg.onmousemove = e => {
     const c = e.target.closest('.tl-dot'); if (!c) return tip(null);
     const i = nodes[+c.dataset.k].i;
-    tip(`<b>${esc(i.name)}</b><div>${esc(i.sku)} · Lot ${esc(i.lot_number)}</div>
-      <div>${fmt(i.quantity)} units · ${money(i.value)}</div>
-      <div style="color:${BUCKETS[i.bucket].color}">● ${daysText(i.days_left)} · ${fmtDate(i.expiry_date)}</div>
-      <div class="tip-muted">${esc(i.main.location_code)}${i.slots > 1 ? ` + ${i.slots - 1} more slot${i.slots > 2 ? 's' : ''}` : ''} — click to open</div>`, e);
+    tip(`<b>${esc(i.name)}</b><div>${esc(i.sku)}, Lot ${esc(i.lot_number)}</div>
+      <div>${fmt(i.quantity)} units, ${money(i.value)}</div>
+      <div><i class="sw" style="background:${BUCKETS[i.bucket].fill || BUCKETS[i.bucket].color}"></i>${daysText(i.days_left)}, ${fmtDate(i.expiry_date)}</div>
+      <div class="tip-muted">${esc(i.main.location_code)}${i.slots > 1 ? ` + ${i.slots - 1} more slot${i.slots > 2 ? 's' : ''}` : ''}. Click to open the rack.</div>`, e);
   };
   svg.onmouseleave = () => tip(null);
   svg.onclick = e => {
@@ -508,14 +508,14 @@ async function viewLayout() {
             <input type="range" id="lay-${k}" data-k="${k}" min="${lo}" max="${hi}" value="${d[k]}">
           </div>`).join('')}
         <div class="wh-ctl">
-          <div class="wh-ctl-head"><label>Cold-room aisles</label><span class="wh-ctl-hint">2–8 °C · tap to toggle</span></div>
+          <div class="wh-ctl-head"><label>Cold-room aisles</label><span class="wh-ctl-hint">2–8 °C. Click an aisle to toggle it.</span></div>
           <div class="wh-coldpick" id="lay-cold"></div>
         </div>
         <div class="wh-form2">
-          <div class="form-group"><label>Units / slot · ambient</label><input type="number" min="1" data-n="slot_capacity_units" value="${d.slot_capacity_units}"></div>
-          <div class="form-group"><label>Units / slot · cold</label><input type="number" min="1" data-n="cold_slot_capacity_units" value="${d.cold_slot_capacity_units}"></div>
-          <div class="form-group"><label>Max kg · ambient</label><input type="number" min="1" data-n="max_weight_kg" value="${d.max_weight_kg}"></div>
-          <div class="form-group"><label>Max kg · cold</label><input type="number" min="1" data-n="cold_max_weight_kg" value="${d.cold_max_weight_kg}"></div>
+          <div class="form-group"><label>Units per slot, ambient</label><input type="number" min="1" data-n="slot_capacity_units" value="${d.slot_capacity_units}"></div>
+          <div class="form-group"><label>Units per slot, cold</label><input type="number" min="1" data-n="cold_slot_capacity_units" value="${d.cold_slot_capacity_units}"></div>
+          <div class="form-group"><label>Max kg per slot, ambient</label><input type="number" min="1" data-n="max_weight_kg" value="${d.max_weight_kg}"></div>
+          <div class="form-group"><label>Max kg per slot, cold</label><input type="number" min="1" data-n="cold_max_weight_kg" value="${d.cold_max_weight_kg}"></div>
           <div class="form-group"><label>Aisle spacing (m)</label><input type="number" min="0.5" step="0.1" data-n="aisle_spacing_m" value="${d.aisle_spacing_m}"></div>
           <div class="form-group"><label>Bay width (m)</label><input type="number" min="0.5" step="0.1" data-n="bay_width_m" value="${d.bay_width_m}"></div>
         </div>
@@ -561,7 +561,7 @@ let _layTimer;
 function layoutChanged(first) {
   const d = WH.layoutDraft;
   $('#lay-cold').innerHTML = Array.from({ length: d.aisles }, (_, k) => k + 1).map(a =>
-    `<button type="button" class="${d.cold_aisles.includes(a) ? 'on' : ''}" data-a="${a}">${d.cold_aisles.includes(a) ? '❄ ' : ''}A${pad2(a)}</button>`).join('');
+    `<button type="button" class="${d.cold_aisles.includes(a) ? 'on' : ''}" data-a="${a}">${d.cold_aisles.includes(a) ? icon('snowflake') : ''}A${pad2(a)}</button>`).join('');
   $('#lay-cold').onclick = e => {
     const b = e.target.closest('[data-a]'); if (!b) return;
     const a = +b.dataset.a;
@@ -641,7 +641,7 @@ async function previewDiff() {
     ${plan.blocked.length ? `<div class="wh-note warn"><b>${plan.blocked.length} slot${plan.blocked.length > 1 ? 's' : ''} block this change.</b> Move their stock first:
       <ul>${plan.blocked.slice(0, 6).map(b => `<li><b>${esc(b.code)}</b> ${esc(b.reason)}</li>`).join('')}${plan.blocked.length > 6 ? `<li>…and ${plan.blocked.length - 6} more</li>` : ''}</ul></div>` : ''}
     ${plan.warnings.length ? `<div class="wh-note"><b>Heads up:</b><ul>${plan.warnings.slice(0, 4).map(w => `<li><b>${esc(w.code)}</b> ${esc(w.reason)}</li>`).join('')}</ul></div>` : ''}
-    ${!plan.blocked.length && !s.add && !s.remove ? '<div class="wh-muted">No slot changes — capacity, weight and spacing settings will still be saved.</div>' : ''}
+    ${!plan.blocked.length && !s.add && !s.remove ? '<div class="wh-muted">No slot changes. Capacity, weight and spacing settings are still saved.</div>' : ''}
     ${!plan.blocked.length && s.remove ? '<div class="wh-muted">Removed slots are empty. They are retired (kept for history), not deleted.</div>' : ''}`;
   $('#lay-apply').disabled = plan.blocked.length > 0;
 }
@@ -657,10 +657,10 @@ async function applyLayout() {
   if (!ok) return;
   try {
     const r = await whApi('PUT', '/api/warehouse/layout', d);
-    toast(`Layout saved — ${fmt(r.summary.total_slots)} slots`);
+    toast(`Layout saved with ${fmt(r.summary.total_slots)} slots`);
     showView('floor');
   } catch (e) {
-    if (e.status === 409) { toast('Some slots still hold stock — see the list', 'error'); previewDiff(); }
+    if (e.status === 409) { toast('Some slots you are removing still hold stock. Move it first; the list shows where.', 'error'); previewDiff(); }
     else toast(e.message, 'error');
   }
 }

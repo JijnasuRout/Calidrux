@@ -79,6 +79,8 @@ and line work in one cobalt ink.
   highlighter (expiring soon), blue is the drawing itself. Nothing else gets colour.
 - **Typography:** [B612](https://github.com/polarsys/b612), the typeface Airbus designed
   for cockpit displays, bundled so it works offline.
+- **Icons:** [Lucide](https://lucide.dev), drawn in the same ink at a 1.75 stroke, bundled
+  as a small offline subset. No emoji, glass effects, glows or rounded cards anywhere.
 - **Sliders are rulers** with tick marks, and the cover sheet carries general notes and a
   revision history built from the audit log.
 
@@ -245,8 +247,8 @@ python installer\generate_icon.py
 | Output | Path |
 |---|---|
 | Standalone app | `dist\Calidrux\Calidrux.exe` |
-| Setup wizard | `dist\installer\Calidrux-Setup-0.5.0.exe` |
-| Portable zip | `dist\installer\Calidrux-Portable-0.5.0.zip` |
+| Setup wizard | `dist\installer\Calidrux-Setup-0.6.0.exe` |
+| Portable zip | `dist\installer\Calidrux-Portable-0.6.0.zip` |
 
 Data is stored in `%APPDATA%\Calidrux\` (or `~/.calidrux/Calidrux/`, or `CALIDRUX_DATA_DIR`
 if set). Databases from earlier versions are upgraded automatically.
@@ -258,7 +260,7 @@ if set). Databases from earlier versions are upgraded automatically.
 |---|---|
 | Optimization | Google OR-Tools (SCIP MIP for slotting, RoutingModel for TSP), pandas |
 | Backend | Python 3.11+, FastAPI, uvicorn, SQLAlchemy 2, SQLite |
-| Interface | HTML, CSS, JavaScript (no framework, no build step), Chart.js |
+| Interface | HTML, CSS, JavaScript (no framework, no build step), Chart.js, Lucide icons, B612 |
 | Desktop | pywebview with Edge WebView2, PyInstaller, Inno Setup |
 | Quality | pytest (37 tests), GitHub Actions on Windows and Linux |
 

@@ -8,7 +8,7 @@
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EASE = 'cubic-bezier(.2,.8,.2,1)';
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.6.0';
 
 // ── Entrances ────────────────────────────────────────────────────────────────
 const ENTER_SEL = [
@@ -113,7 +113,7 @@ toast = function (msg, type = 'success') {
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.setAttribute('role', 'status');
-  const ico = { success: '✓', error: '!', info: 'i' }[type] || '✓';
+  const ico = icon({ success: 'circle-check', error: 'circle-alert', info: 'info' }[type] || 'circle-check');
   el.innerHTML = `<span class="t-ico">${ico}</span><span class="t-msg"></span><span class="t-bar"></span>`;
   el.querySelector('.t-msg').textContent = msg;
   box.appendChild(el);
@@ -225,7 +225,7 @@ if (window.Chart) {
     const b = document.createElement('button');
     b.className = 'nav-search';
     b.type = 'button';
-    b.innerHTML = `<svg width="14" height="14" viewBox="0 0 20 20"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
+    b.innerHTML = `${icon('search')}
       <span>Find a sheet, lot or rack</span><kbd>Ctrl K</kbd>`;
     b.onclick = () => window.openPalette && openPalette();
     brand.after(b);

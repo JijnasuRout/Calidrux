@@ -40,6 +40,7 @@ src/calidrux/
 │       ├── theme.css       # design tokens: colours, fonts, strokes (edit this first)
 │       ├── drawing.css     # the engineering-drawing skin, loaded last
 │       ├── sheet.js        # sheet numbers, title block, zone border
+│       ├── icons.js        # bundled Lucide icons: icon('name') (built by scripts/build_icons.py)
 │       ├── fonts/          # bundled B612 / B612 Mono (OFL)
 │       ├── style.css       # base layout
 │       ├── app.js          # original screens + view router

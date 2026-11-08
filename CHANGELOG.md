@@ -2,6 +2,31 @@
 
 All notable changes to Calidrux. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-11-08 · Lucide icons and a stricter design pass
+
+### Added
+- **Lucide icons** throughout: sheet index, buttons, chips, toasts, the floor plan
+  toolbar, the rack elevation and the command palette. A 43-icon subset is bundled in
+  `icons.js` so the app stays offline; `scripts/build_icons.py` regenerates it.
+- `--icon-size` and `--icon-stroke` tokens in `theme.css`.
+- CUSTOMIZING lesson on using and adding icons, and new design rules for layout, copy
+  and icons.
+
+### Changed
+- Every emoji and symbol glyph used as an icon (❄ ✓ ⇄ ▶ ↻ ⏸ ⌕ and others) is now a Lucide
+  icon, or plain text where an icon added nothing.
+- UI copy rewritten as plain sentences: no "Accepted — …" fragments, no middle-dot
+  strings, sentence case on the older screens, and action names that match their results.
+- Racks are named in drawing notation (Rack A01-B03).
+- Routes and search highlights are drawn in ink; red is kept for expired stock and the
+  baseline route.
+- Empty states and hints are left-aligned.
+
+### Removed
+- Legacy glassmorphism, blur, glowing gradient blobs, blurred shadows and radii over 8px
+  from `motion.css`, `style.css`, `warehouse.css` and `lab.css`, rather than leaving them
+  overridden. `motion.css` is now plain component layout.
+
 ## [0.5.0] — 2026-11-07 · Engineering-drawing redesign
 
 The interface was redesigned as a warehouse drawing set, replacing the generic

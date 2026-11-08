@@ -46,6 +46,8 @@
   --stroke:       1px;       /* standard line weight */
   --stroke-heavy: 2px;       /* sheet border, section cuts */
   --radius:       0px;       /* drawings have square corners */
+  --icon-size:    16px;      /* Lucide icons (icons.js) */
+  --icon-stroke:  1.75;      /* icon line weight, in 24px icon units */
   --gap:          16px;
 
   /* ── Compatibility: the older stylesheets read these names ───────────── */

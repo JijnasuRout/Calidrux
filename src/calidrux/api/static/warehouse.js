@@ -1,7 +1,7 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════════════════════
    Calidrux — Warehouse Operations
-   Floor map · Rack inspector · Receive & put-away · Expiry board · Layout
+   Floor map, Rack inspector, Receive & put-away, Expiry board, Layout
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const WH = {
@@ -44,7 +44,7 @@ const money = n => {
 const pct = u => Math.round((u || 0) * 100) + '%';
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
-const rackName = (a, b) => `A${pad2(a)} · Bay ${pad2(b)}`;
+const rackName = (a, b) => `Rack A${pad2(a)}-B${pad2(b)}`;
 
 function daysText(d) {
   if (d < -1) return `Expired ${-d} days ago`;
@@ -139,8 +139,8 @@ function bucketChip(key, extra = '') {
   return `<span class="wh-chip" style="--c:${b.color};--s:${b.soft}"><i></i>${b.label}${extra}</span>`;
 }
 const zoneChip = z => z === 'cold'
-  ? '<span class="wh-chip cold">❄ Cold room · 2–8 °C</span>'
-  : '<span class="wh-chip ambient">Ambient · 15–25 °C</span>';
+  ? `<span class="wh-chip cold">${icon('thermometer-snowflake')}Cold room, 2–8 °C</span>`
+  : '<span class="wh-chip ambient">Ambient, 15–25 °C</span>';
 const holdChip = '<span class="wh-chip hold">On hold</span>';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -208,7 +208,7 @@ function renderFloor(el, data, opts = {}) {
     if (aisles[k].zone === 'cold') {
       const run = [];
       while (k < aisles.length && aisles[k].zone === 'cold') run.push(aisles[k++]);
-      body += `<div class="wh-coldroom"><div class="wh-coldroom-tag">❄ Cold room · 2–8 °C</div>
+      body += `<div class="wh-coldroom"><div class="wh-coldroom-tag">${icon('thermometer-snowflake')}Cold room, 2–8 °C</div>
         ${run.map(row).join('<div class="wh-walk cold"></div>')}</div>`;
     } else {
       body += row(aisles[k++]);
@@ -225,7 +225,7 @@ function renderFloor(el, data, opts = {}) {
 
   const base = compact ? 30 : 58;
   const lay = data.layout;
-  const dim = !compact && lay ? `<div class="dwg-dim h" style="left:58px"><i></i><span>${fmt(maxBays * lay.bay_width_m, 1)} m · ${maxBays} bays @ ${lay.bay_width_m} m</span><i></i></div>` : '';
+  const dim = !compact && lay ? `<div class="dwg-dim h" style="left:58px"><i></i><span>${fmt(maxBays * lay.bay_width_m, 1)} m, ${maxBays} bays @ ${lay.bay_width_m} m</span><i></i></div>` : '';
   el.innerHTML = `<div class="wh-building ${compact ? 'compact' : ''}" style="--rack-w:${Math.round(base * (opts.zoom || 1))}px">
       <div class="wh-dock"><span>Dock</span><b class="wh-dock-door"></b></div>
       <div class="wh-floorplan">${dim}${header}${body}</div>
@@ -249,17 +249,17 @@ function renderFloor(el, data, opts = {}) {
 
 function rackTip(r) {
   if (!r) return '';
-  const head = `<b>${rackName(r.aisle, r.bay)}</b> ${r.zone === 'cold' ? '<span class="tip-cold">❄ cold</span>' : ''}`;
-  if (r.state === 'removed') return `${head}<div>Will be removed${r.quantity ? ' — still holds stock' : ''}</div>`;
+  const head = `<b>${rackName(r.aisle, r.bay)}</b> ${r.zone === 'cold' ? `<span class="tip-cold">${icon('snowflake')}cold</span>` : ''}`;
+  if (r.state === 'removed') return `${head}<div>Will be removed${r.quantity ? ', but it still holds stock' : ''}</div>`;
   if (r.state === 'new') return `${head}<div>New rack</div>`;
-  if (!r.quantity) return `${head}<div class="tip-muted">Empty · ${fmt(r.capacity)} units free</div>`;
+  if (!r.quantity) return `${head}<div class="tip-muted">Empty, ${fmt(r.capacity)} units free</div>`;
   const exp = r.min_days_left != null
-    ? `<div style="color:${BUCKETS[r.bucket].color}">● ${daysText(r.min_days_left)} (earliest lot)</div>` : '';
+    ? `<div><i class="sw" style="background:${BUCKETS[r.bucket].fill || BUCKETS[r.bucket].color}"></i>${daysText(r.min_days_left)} (earliest lot)</div>` : '';
   return `${head}
-    <div>${fmt(r.quantity)} / ${fmt(r.capacity)} units · ${pct(r.utilization)} full</div>
+    <div>${fmt(r.quantity)} / ${fmt(r.capacity)} units, ${pct(r.utilization)} full</div>
     ${exp}
     <div class="tip-muted">${r.skus.slice(0, 4).map(esc).join(', ')}${r.skus.length > 4 ? ` +${r.skus.length - 4}` : ''}</div>
-    ${r.quarantine ? '<div style="color:#7c3aed">⚠ A lot here is on hold</div>' : ''}`;
+    ${r.quarantine ? `<div style="color:var(--hold)">${icon('circle-pause')}A lot here is on hold</div>` : ''}`;
 }
 
 function floorLegend(mode) {
@@ -284,10 +284,10 @@ async function viewFloor() {
     <div class="wh-view">
     <div class="page-header">
       <div><h1 class="page-title">Floor plan</h1>
-        <div class="page-sub">${esc(floor.layout.name)} · ${floor.aisles.length} aisles, ${k.slots} storage slots. Click a rack to open its elevation.</div></div>
+        <div class="page-sub">${esc(floor.layout.name)}: ${floor.aisles.length} aisles, ${k.slots} storage slots. Click a rack to open its elevation.</div></div>
       <div class="btn-group">
-        <button class="btn btn-ghost" onclick="showView('expiry')">Expiry board</button>
-        <button class="btn btn-primary" onclick="showView('receive')">＋ Receive stock</button>
+        <button class="btn btn-ghost" onclick="showView('expiry')">${icon('calendar-clock')}Expiry schedule</button>
+        <button class="btn btn-primary" onclick="showView('receive')">${icon('package-plus')}Receive stock</button>
       </div>
     </div>
 
@@ -297,14 +297,14 @@ async function viewFloor() {
       <div class="wh-kpi"><div><div class="kpi-label">Units stored</div><div class="wh-kpi-v" data-count="${k.units}"></div>
         <div class="wh-kpi-sub">${pct(k.utilization)} of capacity</div></div></div>
       <div class="wh-kpi"><div><div class="kpi-label">Stock value</div><div class="wh-kpi-v" data-money="${k.value}"></div>
-        <div class="wh-kpi-sub">${k.skus} SKUs · ${k.batches} lots</div></div></div>
+        <div class="wh-kpi-sub">${k.skus} SKUs, ${k.batches} lots</div></div></div>
       <div class="wh-kpi cold">${ring(k.cold_utilization, { size: 58, stroke: 7, color: 'var(--cold)' })}
         <div><div class="kpi-label">Cold room fill</div><div class="wh-kpi-sub">2–8 °C storage</div></div></div>
       <div class="wh-kpi warn" onclick="WH.expiryFilter.bucket='critical';showView('expiry')">
         <div><div class="kpi-label">Expiring ≤ 30 days</div><div class="wh-kpi-v" data-count="${k.critical_lines}"></div>
         <div class="wh-kpi-sub">stock lines</div></div></div>
       <div class="wh-kpi danger" onclick="WH.expiryFilter.bucket='expired';showView('expiry')">
-        <div><div class="kpi-label">Expired · On hold</div><div class="wh-kpi-v"><span data-count="${k.expired_lines}"></span><small> · ${k.quarantine_lines}</small></div>
+        <div><div class="kpi-label">Expired / on hold</div><div class="wh-kpi-v"><span data-count="${k.expired_lines}"></span><small> / ${k.quarantine_lines}</small></div>
         <div class="wh-kpi-sub">need action</div></div></div>
     </div>
 
@@ -319,14 +319,14 @@ async function viewFloor() {
           ${['expiry', 'occupancy', 'zone'].map(m => `<button data-m="${m}" class="${WH.mode === m ? 'on' : ''}">${{ expiry: 'Expiry', occupancy: 'Occupancy', zone: 'Zones' }[m]}</button>`).join('')}
         </div>
         <div class="wh-search">
-          <svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="M8 3a5 5 0 013.9 8.1l4 4-1.4 1.4-4-4A5 5 0 118 3zm0 2a3 3 0 100 6 3 3 0 000-6z"/></svg>
+          ${icon('search')}
           <input id="wh-q" placeholder="Find a SKU, product or lot…" value="${esc(WH.query)}" autocomplete="off">
           <span id="wh-hits"></span>
         </div>
         <div class="wh-zoom">
-          <button onclick="zoomFloor(-1)" title="Zoom out">−</button>
+          <button onclick="zoomFloor(-1)" title="Zoom out">${icon('zoom-out')}</button>
           <button onclick="zoomFloor(0)" title="Fit">Fit</button>
-          <button onclick="zoomFloor(1)" title="Zoom in">＋</button>
+          <button onclick="zoomFloor(1)" title="Zoom in">${icon('zoom-in')}</button>
         </div>
       </div>
       <div class="wh-map-scroll"><div id="wh-floor"></div></div>
@@ -460,9 +460,9 @@ function renderRack(highlight) {
         <div class="wh-dr-chips">${zoneChip(r.zone)} ${r.bucket ? bucketChip(r.bucket, ' earliest') : ''}</div>
       </div>
       <div class="wh-dr-nav">
-        <button ${r.prev ? '' : 'disabled'} onclick="openRack(${r.prev?.aisle},${r.prev?.bay})" title="Previous rack (←)">‹</button>
-        <button ${r.next ? '' : 'disabled'} onclick="openRack(${r.next?.aisle},${r.next?.bay})" title="Next rack (→)">›</button>
-        <button onclick="closeRack()" title="Close (Esc)">✕</button>
+        <button ${r.prev ? '' : 'disabled'} onclick="openRack(${r.prev?.aisle},${r.prev?.bay})" title="Previous rack (←)">${icon('chevron-left')}</button>
+        <button ${r.next ? '' : 'disabled'} onclick="openRack(${r.next?.aisle},${r.next?.bay})" title="Next rack (→)">${icon('chevron-right')}</button>
+        <button onclick="closeRack()" title="Close (Esc)">${icon('x')}</button>
       </div>
     </div>
     <div class="wh-dr-body">
@@ -477,8 +477,8 @@ function renderRack(highlight) {
       </div>
       <div class="wh-elev-wrap ${r.zone}">${rackSvg(r)}</div>
       <div class="dwg-title"><span class="bub"><span>1</span></span>
-        <div><b>Elevation — aisle ${pad2(r.aisle)}, bay ${pad2(r.bay)}${r.zone === 'cold' ? ' (cold room)' : ''}</b><small>Scale 1:25 · ${r.levels.length} levels · ${fmt(r.capacity)} units capacity</small></div></div>
-      <div class="wh-elev-hint">${items.length ? 'Each carton ≈ 1/16 of a shelf · click a carton to see its lot' : 'This rack is empty.'}</div>
+        <div><b>Elevation, aisle ${pad2(r.aisle)}, bay ${pad2(r.bay)}${r.zone === 'cold' ? ' (cold room)' : ''}</b><small>Scale 1:25, ${r.levels.length} levels, ${fmt(r.capacity)} units capacity</small></div></div>
+      <div class="wh-elev-hint">${items.length ? 'Each carton is about 1/16 of a shelf. Click a carton to see its lot.' : 'This rack is empty.'}</div>
       <div id="wh-item"></div>
       ${items.length ? `<div class="wh-dr-section">Contents by level</div>
       <div class="wh-contents">${[...r.levels].reverse().map(l => `
@@ -489,11 +489,11 @@ function renderRack(highlight) {
           ${l.items.length ? l.items.map(i => `
             <button class="wh-line" data-inv="${i.inventory_id}">
               <i class="dot" style="background:${BUCKETS[i.bucket].color}"></i>
-              <span class="wh-line-main"><b>${esc(i.name)}</b><small>${esc(i.sku)} · Lot ${esc(i.lot_number)}</small></span>
+              <span class="wh-line-main"><b>${esc(i.name)}</b><small>${esc(i.sku)}, Lot ${esc(i.lot_number)}</small></span>
               <span class="wh-line-qty">${fmt(i.quantity)}</span>
               <span class="wh-line-exp" style="color:${BUCKETS[i.bucket].color}">${daysText(i.days_left)}</span>
               ${i.status === 'quarantine' ? holdChip : ''}
-            </button>`).join('') : `<div class="wh-line empty">Empty · ${fmt(l.capacity)} units free</div>`}
+            </button>`).join('') : `<div class="wh-line empty">Empty, ${fmt(l.capacity)} units free</div>`}
         </div>`).join('')}</div>` : ''}
     </div>`;
   animateRings(dr);
@@ -505,8 +505,8 @@ function renderRack(highlight) {
     const g = e.target.closest('g[data-inv]');
     if (!g) return tip(null);
     const it = items.find(i => i.inventory_id === +g.dataset.inv);
-    tip(`<b>${esc(it.name)}</b><div>${esc(it.sku)} · Lot ${esc(it.lot_number)}</div>
-      <div>${fmt(it.quantity)} units</div><div style="color:${BUCKETS[it.bucket].color}">● ${daysText(it.days_left)}</div>`, e);
+    tip(`<b>${esc(it.name)}</b><div>${esc(it.sku)}, Lot ${esc(it.lot_number)}</div>
+      <div>${fmt(it.quantity)} units</div><div><i class="sw" style="background:${BUCKETS[it.bucket].fill || BUCKETS[it.bucket].color}"></i>${daysText(it.days_left)}</div>`, e);
   };
   dr.onmouseleave = () => tip(null);
   if (highlight) selectItem(highlight, false, true);
@@ -549,7 +549,7 @@ function rackSvg(r) {
     flush();
     if (!lvl.items.length) {
       g += `<rect x="${x0 + 4}" y="${beamY - LH + 18}" width="${inner - 8}" height="${LH - 24}" rx="6" class="wh-empty-slot"/>
-            <text x="${(x0 + x1) / 2}" y="${beamY - LH / 2 + 6}" text-anchor="middle" class="wh-empty-t">Empty · ${fmt(lvl.capacity)} free</text>`;
+            <text x="${(x0 + x1) / 2}" y="${beamY - LH / 2 + 6}" text-anchor="middle" class="wh-empty-t">Empty, ${fmt(lvl.capacity)} free</text>`;
     } else if (slots.length > PER_LEVEL) {
       g += `<text x="${x1 - 4}" y="${beamY - 2 * ch - 6}" text-anchor="end" class="wh-over-t">over capacity</text>`;
     }
@@ -607,8 +607,8 @@ function selectItem(invId, scroll, pulse) {
         </div>
         <div class="wh-ic-main">
           <div class="wh-ic-name">${esc(it.name)}</div>
-          <div class="wh-ic-sub">${esc(it.sku)} · Lot <b>${esc(it.lot_number)}</b></div>
-          <div class="wh-dr-chips">${bucketChip(it.bucket)} ${it.storage_class === 'cold' ? '<span class="wh-chip cold">❄ Cold chain</span>' : ''} ${hold ? holdChip : ''}</div>
+          <div class="wh-ic-sub">${esc(it.sku)}, Lot <b>${esc(it.lot_number)}</b></div>
+          <div class="wh-dr-chips">${bucketChip(it.bucket)} ${it.storage_class === 'cold' ? `<span class="wh-chip cold">${icon('snowflake')}Cold chain</span>` : ''} ${hold ? holdChip : ''}</div>
         </div>
       </div>
       <div class="wh-ic-grid">
@@ -621,9 +621,9 @@ function selectItem(invId, scroll, pulse) {
       </div>
       <div class="wh-ic-life"><span>Shelf life left (of 12 months)</span><div><i style="width:${(it.days_left < 0 ? 0 : life) * 100}%"></i></div></div>
       <div class="wh-ic-actions">
-        <button class="btn btn-ghost btn-sm" onclick="startMove(${it.inventory_id})">⇄ Move</button>
-        <button class="btn btn-ghost btn-sm" onclick="setHold(${it.batch_id}, ${!hold})">${hold ? '✓ Release hold' : '⏸ Put lot on hold'}</button>
-        <button class="btn btn-ghost btn-sm" onclick="findOnMap('${esc(it.lot_number)}')">⌕ Find this lot everywhere</button>
+        <button class="btn btn-ghost btn-sm" onclick="startMove(${it.inventory_id})">${icon('arrow-left-right')}Move</button>
+        <button class="btn btn-ghost btn-sm" onclick="setHold(${it.batch_id}, ${!hold})">${hold ? icon('circle-check') + 'Release hold' : icon('circle-pause') + 'Put lot on hold'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="findOnMap('${esc(it.lot_number)}')">${icon('search')}Find this lot on the floor plan</button>
       </div>
       <div id="wh-move"></div>
     </div>`;
@@ -677,7 +677,7 @@ async function startMove(invId) {
   box.innerHTML = `
     <form class="wh-move" onsubmit="doMove(event, ${invId})">
       <label>Move to<select name="to">${options.map(s =>
-        `<option value="${s.location_id}" data-free="${s.free}">${esc(s.code)} — ${fmt(s.free)} free · ${esc(s.reasons[0])}</option>`).join('')}</select></label>
+        `<option value="${s.location_id}" data-free="${s.free}">${esc(s.code)}: ${fmt(s.free)} free, ${esc(s.reasons[0])}</option>`).join('')}</select></label>
       <label>Units<input name="qty" type="number" min="1" max="${it.quantity}" value="${Math.min(it.quantity, options[0].free)}" step="1"></label>
       <button class="btn btn-primary btn-sm" type="submit">Move</button>
       <button class="btn btn-ghost btn-sm" type="button" onclick="document.getElementById('wh-move').innerHTML=''">Cancel</button>

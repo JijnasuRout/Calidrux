@@ -77,7 +77,7 @@ async function viewOverview() {
         <div class="card-title">Key plan</div>
         <div id="ov-floor" class="wh-map-scroll"></div>
         <div class="wh-legend">${BUCKET_ORDER.map(x => `<span class="lg"><i style="background:${BUCKETS[x].fill || BUCKETS[x].color}"></i>${BUCKETS[x].label}</span>`).join('')}
-          <span class="lg muted">Click a rack for its elevation · full plan on ${sheetLink('floor')}</span></div>
+          <span class="lg muted">Click a rack for its elevation. Full plan on ${sheetLink('floor')}</span></div>
       </div>
       <div class="card">
         <div class="card-title">Inventory schedule</div>

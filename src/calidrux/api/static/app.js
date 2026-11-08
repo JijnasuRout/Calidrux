@@ -91,7 +91,7 @@ async function viewDashboard() {
     <div class="card">
       <div class="card-title">${alerts.length ? 'Expiry Alerts' : 'No Expiry Alerts'}</div>
       ${alerts.length ? `<div class="table-wrap"><table>
-        <thead><tr><th>SKU</th><th>Lot</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+        <thead><tr><th>SKU</th><th>Lot</th><th>Expiry date</th><th>Days left</th></tr></thead>
         <tbody>${alertRows.join('')}</tbody>
       </table></div>` : '<div class="empty">All batches are within safe expiry windows.</div>'}
     </div>`;
@@ -133,13 +133,13 @@ async function _renderInvPanel(tab) {
       <div class="card">
         <div class="card-title">Products
           <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            ↑ Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(this,'products')">
+            ${icon('upload')}Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(this,'products')">
           </label>
         </div>
         ${tbl(['SKU','Name','Storage','Unit Cost','Weight','Pick Freq/30d'], rows, 'No products yet.')}
       </div>
       <div class="card">
-        <div class="card-title">Add Product</div>
+        <div class="card-title">Add product</div>
         <form onsubmit="addProduct(event)">
           <div class="form-grid">
             <div class="form-group"><label>SKU</label><input name="sku" required placeholder="PH-001"></div>
@@ -166,13 +166,13 @@ async function _renderInvPanel(tab) {
       <div class="card">
         <div class="card-title">Locations
           <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            ↑ Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(this,'locations')">
+            ${icon('upload')}Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(this,'locations')">
           </label>
         </div>
         ${tbl(['Code','Zone','Aisle','Bay','Level','X','Y','Max kg'], rows, 'No locations yet.')}
       </div>
       <div class="card">
-        <div class="card-title">Add Location</div>
+        <div class="card-title">Add location</div>
         <form onsubmit="addLocation(event)">
           <div class="form-grid">
             <div class="form-group"><label>Code</label><input name="code" required placeholder="A01-B01-L1"></div>
@@ -199,11 +199,11 @@ async function _renderInvPanel(tab) {
     ]);
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Batches / Lots</div>
+        <div class="card-title">Batches / lots</div>
         ${tbl(['ID','Product ID','Lot Number','Expiry Date','Status'], rows, 'No batches yet.')}
       </div>
       <div class="card">
-        <div class="card-title">Create Batch</div>
+        <div class="card-title">Create batch</div>
         <form onsubmit="createBatch(event)">
           <div class="form-grid">
             <div class="form-group"><label>Product ID</label><input name="product_id" type="number" required></div>
@@ -225,8 +225,8 @@ async function _renderInvPanel(tab) {
     ]);
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Current Stock Levels
-          <button class="btn btn-ghost btn-sm" onclick="switchInv('stock')">↺ Refresh</button>
+        <div class="card-title">Current stock levels
+          <button class="btn btn-ghost btn-sm" onclick="switchInv('stock')">${icon('rotate-cw')}Refresh</button>
         </div>
         ${tbl(['SKU','Product','Lot','Expiry','Batch','Location','Zone','Qty'], rows, 'No stock on hand.')}
       </div>`;
@@ -235,7 +235,7 @@ async function _renderInvPanel(tab) {
   else if (tab === 'receive') {
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Receive Stock</div>
+        <div class="card-title">Receive stock</div>
         <form onsubmit="receiveStock(event)">
           <div class="form-grid">
             <div class="form-group"><label>Product ID</label><input name="product_id" type="number" required></div>
@@ -248,7 +248,7 @@ async function _renderInvPanel(tab) {
         </form>
       </div>
       <div class="card">
-        <div class="card-title">Cycle-Count Adjustment</div>
+        <div class="card-title">Cycle-Count adjustment</div>
         <form onsubmit="adjustStock(event)">
           <div class="form-grid">
             <div class="form-group"><label>Product ID</label><input name="product_id" type="number" required></div>
@@ -265,7 +265,7 @@ async function _renderInvPanel(tab) {
   else if (tab === 'transfer') {
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Transfer Stock</div>
+        <div class="card-title">Transfer stock</div>
         <form onsubmit="transferStock(event)">
           <div class="form-grid">
             <div class="form-group"><label>Product ID</label><input name="product_id" type="number" required></div>
@@ -284,7 +284,7 @@ async function _renderInvPanel(tab) {
     const rows = items.map(m => [m.id, m.type, m.reference, m.user, m.created_at, m.lines]);
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Movement History</div>
+        <div class="card-title">Movement history</div>
         ${tbl(['ID','Type','Reference','User','Time','Lines'], rows, 'No movements.')}
       </div>`;
   }
@@ -384,7 +384,7 @@ async function viewABC() {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header"><h1 class="page-title">ABC analysis</h1></div>
     <div class="card">
-      <div class="card-title">Run Analysis</div>
+      <div class="card-title">Run analysis</div>
       <form onsubmit="runABC(event)">
         <div class="form-grid">
           <div class="form-group"><label>Threshold A (cumulative %)</label>
@@ -430,11 +430,11 @@ function _renderABCResults({ results, pareto }) {
       ${kpiCard('Class C SKUs', counts.C || 0)}
     </div>
     <div class="card">
-      <div class="card-title">Pareto Chart — Annual Usage Value</div>
+      <div class="card-title">Pareto chart: annual usage value</div>
       <div class="chart-container" style="height:280px"><canvas id="pareto-chart"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">Classification Results
+      <div class="card-title">Classification results
         <form onsubmit="saveSnapshot(event)" style="display:flex;gap:8px;align-items:center">
           <input name="label" placeholder="Snapshot label…" style="width:180px">
           <button class="btn btn-ghost btn-sm" type="submit">Save Snapshot</button>
@@ -461,7 +461,7 @@ function _renderABCResults({ results, pareto }) {
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: {
-        y: { position: 'left', title: { display: true, text: 'Annual Usage Value ($)' } },
+        y: { position: 'left', title: { display: true, text: 'Annual usage value ($)' } },
         y1: { position: 'right', min: 0, max: 100,
               title: { display: true, text: 'Cumulative %' },
               grid: { drawOnChartArea: false } }
@@ -498,13 +498,13 @@ async function viewSlotting() {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
       <h1 class="page-title">Slotting Optimization</h1>
-      <button class="btn btn-primary" onclick="runSlotting(this)">▶ Run OR-Tools Solver</button>
+      <button class="btn btn-primary" onclick="runSlotting(this)">${icon('play')}Run solver</button>
     </div>
     <div id="slotting-msg"></div>
     <div class="card">
       <div class="card-title">Recommendations &nbsp;<span class="badge b-pending">${pending} pending</span></div>
       ${tbl(['ID','SKU','From','To','Cost','Status','Created','Actions'], rows,
-            'No recommendations yet — click "Run OR-Tools Solver" to generate.')}
+            'No recommendations yet. Select Run solver to generate them.')}
     </div>`;
 }
 
@@ -526,7 +526,7 @@ async function runSlotting(btn) {
 async function acceptRec(id) {
   try {
     await api('POST', `/api/slotting/${id}/accept`);
-    toast('Accepted — transfer task created'); viewSlotting();
+    toast('Transfer task created'); viewSlotting();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -540,8 +540,8 @@ async function viewPicking() {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header"><h1 class="page-title">Pick routes</h1></div>
     <div class="tabs">
-      <div class="tab${_pickTab==='lists'?' active':''}" onclick="switchPick('lists')">Pick Lists</div>
-      <div class="tab${_pickTab==='metrics'?' active':''}" onclick="switchPick('metrics')">Efficiency Metrics</div>
+      <div class="tab${_pickTab==='lists'?' active':''}" onclick="switchPick('lists')">Pick lists</div>
+      <div class="tab${_pickTab==='metrics'?' active':''}" onclick="switchPick('metrics')">Efficiency metrics</div>
     </div>
     <div id="pick-panel"></div>`;
   await _renderPickPanel(_pickTab);
@@ -572,7 +572,7 @@ async function _renderPickPanel(tab) {
 
     el.innerHTML = `
       <div class="card">
-        <div class="card-title">Create Pick List (FEFO + TSP routing)</div>
+        <div class="card-title">Create pick list (FEFO + TSP routing)</div>
         <form onsubmit="createPickList(event)">
           <div class="form-grid">
             <div class="form-group"><label>Reference</label><input name="reference" placeholder="PL-001" required></div>
@@ -583,7 +583,7 @@ async function _renderPickPanel(tab) {
         </form>
       </div>
       <div class="card">
-        <div class="card-title">Pick Lists</div>
+        <div class="card-title">Pick lists</div>
         ${tbl(['ID','Reference','Lines','Status','Opt. Dist','Base Dist','Created','Actions'], rows, 'No pick lists.')}
       </div>
       <div id="pick-lines-detail"></div>`;
@@ -593,16 +593,16 @@ async function _renderPickPanel(tab) {
     const m = await api('GET', '/api/picking/metrics');
     el.innerHTML = `
       <div class="metric-row">
-        ${metricItem('Completed Picks', m.completed_picks)}
-        ${metricItem('Avg Picks / Hour', m.avg_picks_per_hour)}
-        ${metricItem('Avg Optimised Dist', m.avg_optimized_distance_m + 'm')}
-        ${metricItem('Avg Baseline Dist', m.avg_baseline_distance_m + 'm')}
-        ${metricItem('Distance Savings', m.distance_savings_pct + '%')}
-        ${metricItem('FEFO Compliance', m.fefo_compliance_pct + '%')}
-        ${metricItem('Error Rate', m.error_rate_pct + '%')}
+        ${metricItem('Completed picks', m.completed_picks)}
+        ${metricItem('Avg picks / hour', m.avg_picks_per_hour)}
+        ${metricItem('Avg optimized distance', m.avg_optimized_distance_m + 'm')}
+        ${metricItem('Avg baseline distance', m.avg_baseline_distance_m + 'm')}
+        ${metricItem('Distance savings', m.distance_savings_pct + '%')}
+        ${metricItem('FEFO compliance', m.fefo_compliance_pct + '%')}
+        ${metricItem('Error rate', m.error_rate_pct + '%')}
       </div>
       <div class="card">
-        <div class="card-title">Route Distance Comparison</div>
+        <div class="card-title">Route distance comparison</div>
         <div class="chart-container" style="height:220px"><canvas id="metrics-chart"></canvas></div>
       </div>`;
 
@@ -610,7 +610,7 @@ async function _renderPickPanel(tab) {
     _metricsChart = new Chart(document.getElementById('metrics-chart'), {
       type: 'bar',
       data: {
-        labels: ['Optimised (m)', 'Baseline (m)'],
+        labels: ['Optimized (m)', 'Baseline (m)'],
         datasets: [{
           data: [m.avg_optimized_distance_m, m.avg_baseline_distance_m],
           backgroundColor: ['#1d4ed8', '#bfdbfe'],
@@ -634,7 +634,7 @@ async function createPickList(e) {
       reference: fd.get('reference'),
       lines: [{ product_id: +fd.get('product_id'), quantity: +fd.get('quantity') }],
     });
-    toast(`Pick list created — ${pl.lines} line(s), ${pl.optimized_distance_m}m optimised route`);
+    toast(`Pick list created: ${pl.lines} lines, ${pl.optimized_distance_m} m optimized route`);
     e.target.reset();
     switchPick('lists');
   } catch (err) { toast(err.message, 'error'); }
@@ -647,11 +647,11 @@ async function showPickLines(id) {
   const rows = pl.lines.map(l => [
     l.sequence, `<strong>${l.sku}</strong>`, l.lot_number, l.expiry_date,
     l.location_code, l.quantity,
-    l.picked ? '✓' : '—', l.pick_error || '—'
+    l.picked ? icon('check') : '—', l.pick_error || '—'
   ]);
   detail.innerHTML = `
     <div class="card">
-      <div class="card-title">Pick List <strong>${pl.reference}</strong> — Optimised Pick Route
+      <div class="card-title">Pick list <strong>${pl.reference}</strong> optimized route
         &nbsp; ${badge(pl.status, STATUS_BADGE)}
         &nbsp;<small style="color:var(--muted)">opt ${pl.optimized_distance_m}m vs baseline ${pl.baseline_distance_m}m</small>
       </div>
@@ -673,7 +673,7 @@ async function viewAudit() {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header">
       <h1 class="page-title">Audit log</h1>
-      <button class="btn btn-ghost" onclick="showView('audit')">↺ Refresh</button>
+      <button class="btn btn-ghost" onclick="showView('audit')">${icon('rotate-cw')}Refresh</button>
     </div>
     <div class="card">
       ${tbl(['ID','Time','Entity','Entity ID','Action','User','Notes'], rows, 'No audit entries.')}
@@ -686,7 +686,7 @@ async function viewSettings() {
   document.getElementById('view-content').innerHTML = `
     <div class="page-header"><h1 class="page-title">Settings</h1></div>
     <div class="card">
-      <div class="card-title">General &amp; Audit</div>
+      <div class="card-title">General &amp; audit</div>
       <form onsubmit="saveSettings(event)">
         <div class="form-grid">
           <div class="form-group"><label>User name (audit trail)</label>

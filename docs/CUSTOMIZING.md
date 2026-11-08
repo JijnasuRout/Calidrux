@@ -123,8 +123,18 @@ Still in `theme.css`:
 --radius:       0px;       /* drawings have square corners */
 ```
 
-Set `--stroke: 1.5px` for a bolder print, or `--radius: 4px` to soften the corners
-(technical drawings normally keep them square).
+Set `--stroke: 1.5px` for a bolder print, or `--radius: 4px` to soften the corners.
+Keep the radius between 0 and 8px so it stays tight; technical drawings normally keep
+corners square.
+
+The icon tokens are here too:
+
+```css
+--icon-size:    16px;      /* Lucide icons (icons.js) */
+--icon-stroke:  1.75;      /* icon line weight, in 24px icon units */
+```
+
+Try `--icon-stroke: 1.25` for finer icons that match the 1px linework.
 
 ### Lesson 3 · Change the font (10 minutes)
 
@@ -141,6 +151,37 @@ The app ships its own font files in `static/fonts/` so it looks the same offline
 - **Proper way:** download a font's `.woff2` files (Google Fonts and Fontsource offer
   free ones), put them in `static/fonts/`, and copy one of the `@font-face { … }` blocks at
   the top of `theme.css`, changing the name and file path.
+
+### Lesson 3b · Use and add icons (10 minutes)
+
+Icons come from [Lucide](https://lucide.dev/icons), a free open-source icon set. Only the
+icons the app uses are bundled, in `static/icons.js`, so it still works offline.
+
+**Use an icon that's already bundled.** In any JavaScript template, call `icon('name')`:
+
+```js
+`<button class="btn btn-ghost">${icon('rotate-cw')}Refresh</button>`
+```
+
+In plain HTML, write `<i data-icon="name"></i>` and it's swapped for the icon when the page
+loads. The list of bundled names is at the top of `scripts/build_icons.py`.
+
+**Add a new icon.**
+
+1. Find it on [lucide.dev/icons](https://lucide.dev/icons), for example `truck`.
+2. Add `"truck"` to the `NAMES` list in `scripts/build_icons.py`.
+3. Download the icon files once, then rebuild `icons.js`:
+   ```powershell
+   npm pack lucide-static
+   tar -xzf lucide-static-*.tgz
+   python scripts\build_icons.py package\icons
+   ```
+   No Node.js? Download the zip from the Lucide GitHub releases page instead, and pass the
+   path of its `icons` folder to the script.
+4. Use `icon('truck')` anywhere.
+
+Icons sit in a flex row with their label, so you don't need spaces or margins: buttons,
+chips and the sheet index already put a 6px gap between the icon and the text.
 
 ### Lesson 4 · Rename a sheet (5 minutes)
 
@@ -332,12 +373,20 @@ work inside that folder from then on (see the README's Quick start).
 
 If you add screens, keep them consistent with the drawing-set idea:
 
-1. **Linework, not decoration.** Use borders and rules to separate things. No shadows,
-   gradients or rounded cards.
-2. **Color means something.** Cobalt is normal; redline is a problem; highlighter is a
+1. **Linework, not decoration.** Use borders and rules to separate things. No glass
+   (`backdrop-filter`), glows, blurred shadows, gradient blobs or rounded cards. Corners are
+   square; if you change `--radius`, keep it between 2 and 8px everywhere.
+2. **Lay things out on the grid.** Panels line up edge to edge in CSS grid columns, and
+   body text is left-aligned. Centre only numbers in table cells and single icons.
+3. **Color means something.** Cobalt is normal; redline is a problem; highlighter is a
    warning. Don't use red or yellow just to make something stand out.
-3. **Sentence case.** Labels read "Units stored", not "UNITS STORED".
-4. **Codes in the mono face, words in B612.** Slot codes (`A03-B05-L2`) and sheet numbers
+4. **Sentence case and plain verbs.** Labels read "Units stored", not "UNITS STORED".
+   Buttons say exactly what they do ("Put lot on hold", "Run solver"), and messages are
+   sentences ("Stock moved to the new slot"), not "Accepted — …" fragments or marketing
+   phrases like "Transform your workflow".
+5. **Icons are Lucide, one per action.** Use `icon('name')`, never emoji or symbol
+   characters like ❄ or ✓ as icons.
+6. **Codes in the mono face, words in B612.** Slot codes (`A03-B05-L2`) and sheet numbers
    use `var(--mono)`; everything else uses `var(--font)`.
-5. **Motion only answers an action.** Opening a rack, putting stock away or drawing a
+7. **Motion only answers an action.** Opening a rack, putting stock away or drawing a
    route can animate. Nothing moves just to decorate.
